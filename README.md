@@ -6,16 +6,16 @@ This SDK enables you to communicate comfortably and quickly with your Backand ap
 It requires zero configurations, no installations and no requirements.
 
 ## Installation
-<!---
-- NPM:
+
+<!-- - NPM:
 ```bash
 $ npm install vanillabknd-sdk
 ```
 - CDN:
 ``` html
 <script src=""></script>
-```
--->
+``` -->
+
 - Download/Clone this repo and include `backand.js` in your project
 ``` html
 <script src="backand.js"></script>
