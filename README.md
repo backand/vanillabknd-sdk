@@ -15,7 +15,7 @@ $ npm install vanillabknd-sdk
 ``` html
 <script src=""></script>
 ```
---->
+-->
 - Download/Clone this repo and include `backand.js` in your project
 ``` html
 <script src="backand.js"></script>
@@ -38,7 +38,7 @@ backand.service.storage.setAnonymousToken('ANONYMOUS_TOKEN');
 #### Methods:
 
 #### Events:
---->
+-->
 
 ## Examples
 ***To view the demo web page, just run demo.html from the [example page](https://github.com/backand/vanillabknd-sdk/blob/master/example/).***
