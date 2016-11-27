@@ -1,8 +1,5 @@
 # Dependency directory
 node_modules/**
 
-# img
-assets/img/**
-
-#.idea
-.idea/**
+# temp
+temp/**

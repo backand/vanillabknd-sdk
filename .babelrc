@@ -2,7 +2,7 @@
   "presets": [
       "es2015"
   ],
-  "plugins": [
-    "add-module-exports"
-  ]
+   "plugins": [
+     "transform-object-assign"
+   ]
 }

@@ -15,9 +15,9 @@ It requires zero configurations, no installations and no requirements.
 
 ## Quick start
 ```javascript
-backand.service.storage.setAppName('APP_NAME');
-backand.service.storage.setSignUpToken('SIGNUP_TOKEN');
-backand.service.storage.setAnonymousToken('ANONYMOUS_TOKEN');
+backand.storage.setAppName('APP_NAME');
+backand.storage.setSignUpToken('SIGNUP_TOKEN');
+backand.storage.setAnonymousToken('ANONYMOUS_TOKEN');
 ```
 
 

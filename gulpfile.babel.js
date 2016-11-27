@@ -21,9 +21,9 @@ gulp.task('clean', function () {
 
 gulp.task('build', ['clean'], ()=> {
   return browserify({ entries: paths.src.js, debug: true })
-  	.transform("babelify", {presets: ["es2015"]})
+  	.transform("babelify")
     .bundle()
-    // .on('error',gutil.log)
+    .on('error',gutil.log)
     .pipe(source('backand.js'))
     .pipe(buffer())
     .pipe(sourcemaps.init())

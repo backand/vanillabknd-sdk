@@ -7,10 +7,8 @@
 (function () {
 
     // init backand
+    backand.initiate({appName: 'sdk', signUpToken: '851692ae-eb94-4f18-87ee-075255e67748', anonymousToken: '82cfcfe8-c718-4621-8bb6-cd600e23487f'});
     var app = backand.service;
-    app.storage.setAppName('sdk');
-    app.storage.setSignUpToken('851692ae-eb94-4f18-87ee-075255e67748');
-    app.storage.setAnonymousToken('82cfcfe8-c718-4621-8bb6-cd600e23487f');
 
     var outputContainer = document.getElementById('outputContainer');
     var outputElement = document.getElementById('outputElement');
@@ -23,6 +21,7 @@
         outputElement.innerText = "status: " + response.status + "\n" + JSON.stringify(response.data);
     };
     var errorCallback = function (response) {
+      // console.log(response);
       outputElement.innerText = '';
       outputContainer.classList.remove('panel-success');
       outputContainer.classList.add('panel-danger');
@@ -42,13 +41,30 @@
         app.useAnonymousAuth(successCallback);
       }, false);
 
-    //CRUD
+    var socialProviders = backand.constants.SOCIAL_PROVIDERS
+    for (var provider in socialProviders) {
+      var btn = document.createElement("button");
+      var node = document.createTextNode(socialProviders[provider].label);
+      btn.appendChild(node);
+      btn.value = socialProviders[provider].name;
+      btn.className = "btn btn-primary";
+      btn.style.backgroundColor = socialProviders[provider].css.backgroundColor;
+      btn.style.borderColor = socialProviders[provider].css.backgroundColor;
+
+      btn.onclick = function(e) {
+        app.socialSignin(e.srcElement.value, successCallback, errorCallback)
+      };
+
+      document.getElementById('social_btns').appendChild(btn);
+    }
+
+    // CRUD
     document.getElementById('getitem_btn').disabled = true;
     document.getElementById('updateitem_btn').disabled = true;
     document.getElementById('deleteitem_btn').disabled = true;
 
     document.getElementById('postitem_btn').addEventListener('click', function() {
-      app.postItem(objectName, {
+      app.create(objectName, {
         name:'test',
         description:'new item'
       }, {returnObject: true}, function (response) {
@@ -61,24 +77,61 @@
     }, false);
 
     document.getElementById('getitems_btn').addEventListener('click', function() {
-      app.getItems(objectName, {}, successCallback, errorCallback);
+      app.getList(objectName, {}, successCallback, errorCallback);
     }, false);
 
     document.getElementById('getitem_btn').addEventListener('click', function() {
-      app.getItem(objectName, lastCreatedId, {}, successCallback, errorCallback);
+      app.getOne(objectName, lastCreatedId, {}, successCallback, errorCallback);
     }, false);
 
 
     document.getElementById('updateitem_btn').addEventListener('click', function() {
-      app.updateItem(objectName, lastCreatedId, {
+      app.update(objectName, lastCreatedId, {
         name:'test',
         description:'old item'
       }, {returnObject: true}, successCallback, errorCallback);
     }, false);
 
     document.getElementById('deleteitem_btn').addEventListener('click', function() {
-      app.deleteItem(objectName, lastCreatedId, successCallback, errorCallback);
+      app.remove(objectName, lastCreatedId, successCallback, errorCallback);
     }, false);
 
+    // FILES
+    var lastUploaded = null;
+    document.getElementById('delfile_btn').disabled = true;
 
+    document.getElementById('uploadfile_btn').addEventListener("change", function () {
+      var preview = document.getElementById('preview');
+      var file    = document.querySelector('input[type=file]').files[0];
+      var reader  = new FileReader();
+
+      reader.addEventListener("load", function () {
+        // console.log(file);
+        // console.log(reader);
+        app.uploadFile('items', 'files', file.name, reader.result, function (response) {
+          preview.src = response.data.url;
+          lastUploaded = file.name;
+          document.getElementById('delfile_btn').disabled = false;
+          successCallback(response);
+        }, errorCallback);
+      }, false);
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    }, false);
+
+    document.getElementById('delfile_btn').addEventListener('click', function() {
+      app.deleteFile('items','files', lastUploaded, function (response) {
+        preview.src = ""
+        lastUploaded = null;
+        document.getElementById('delfile_btn').disabled = true;
+        successCallback(response);
+      }, errorCallback);
+    }, false);
+
+    // SOCKET
+    backand.socket.on('items_updated', function (data) {
+      console.log("event:" + data);
+    });
 })();
