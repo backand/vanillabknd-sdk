@@ -14,7 +14,8 @@
   },
   "scripts": {
     "build": "gulp",
-    "dev": "gulp watch"
+    "dev": "gulp watch",
+    "start": "start http://localhost:3000/ && cd ./example && node server.js"
   },
   "author": "Backand",
   "license": "MIT",

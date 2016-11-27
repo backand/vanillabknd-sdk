@@ -1,4 +1,4 @@
-vanillabknd-sdk
+javascriptknd-sdk
 ===
 
 >  Backand SDK for JavaScript
@@ -15,14 +15,16 @@ It requires zero configurations, no installations and no requirements.
 
 ## Quick start
 ```javascript
-backand.storage.setAppName('APP_NAME');
-backand.storage.setSignUpToken('SIGNUP_TOKEN');
-backand.storage.setAnonymousToken('ANONYMOUS_TOKEN');
+backand.initiate({
+  appName: 'APP_NAME',
+  signUpToken: 'SIGNUP_TOKEN',
+  anonymousToken: 'ANONYMOUS_TOKEN'
+});
 ```
 
 
 ## Examples
-***To view the demo web page, just run demo.html from the [example page](https://github.com/backand/vanillabknd-sdk/blob/master/example/).***
+***To view the demo web page, just run npm start - [example page](https://github.com/backand/vanillabknd-sdk/blob/master/example/).***
 
 
 ## License
