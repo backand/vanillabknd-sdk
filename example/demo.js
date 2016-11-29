@@ -132,6 +132,7 @@
 
     // SOCKET
     backand.socket.on('items_updated', function (data) {
-      console.log("event:" + data);
+      console.log('items_updated');
+      console.log(data);
     });
 })();

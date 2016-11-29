@@ -55,18 +55,22 @@ class Http {
     return new Promise((resolve, reject) => {
       let req = new XMLHttpRequest();
       let config = Object.assign({}, this.config, cfg);
+      config.interceptors.request && config.interceptors.request(config);
 
       req.open(config.method, `${config.baseURL ? config.baseURL+'/' : ''}${config.url}`, true);
       req.onreadystatechange = () => {
         if (req.readyState == XMLHttpRequest.DONE) {
-           if(req.status === 200){
-             scb && scb(this._createResponse(req));
-             resolve(this._createResponse(req));
-           }
-           else {
-             ecb && ecb(this._createResponse(req));
-             reject(this._createResponse(req));
-           }
+          let res = this._createResponse(req);
+          if(res.status === 200){
+            config.interceptors.response && config.interceptors.response.call(this, res, config, resolve, reject, scb, ecb);
+            scb && scb(res);
+            resolve(res);
+          }
+          else {
+            config.interceptors.responseError && config.interceptors.responseError.call(this, res, config, resolve, reject, scb, ecb);
+            ecb && ecb(res);
+            reject(res);
+          }
         }
       }
       this._setHeaders(req, config.headers);

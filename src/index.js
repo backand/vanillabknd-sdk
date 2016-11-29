@@ -18,7 +18,11 @@ import * as files from './services/files'
   'use strict';
   window['backand'] = {};
   window['backand'].initiate = (config = {}) => {
+
+    // combine defaults with user config
     Object.assign(defaults, config);
+
+    // verify new defaults
     if (!defaults.appName)
       throw new Error('appName is missing');
     if (!defaults.anonymousToken)
@@ -26,29 +30,53 @@ import * as files from './services/files'
     if (!defaults.signUpToken)
       throw new Error('signUpToken is missing');
 
+    // init globals
     let storage = new Storage(defaults.storageType, defaults.storagePrefix);
     let http = Http({
       baseURL: defaults.apiUrl
     });
-    let socket = null;
-
     let scope = {
       storage,
       http,
     }
-
+    let socket = null;
     if (defaults.runSocket) {
       socket = new Socket(defaults.socketUrl);
       scope.socket = socket;
     }
 
+    // bind globals to all service functions
     let service = Object.assign({}, auth, crud, files);
     for (let fn in service) {
-      // console.log(fn);
       service[fn] = service[fn].bind(scope);
     }
-    service.__initiate__();
 
+    // set interceptor for authHeaders & refreshToken
+    http.config.interceptors = {
+      request: function(config) {
+        if (config.url.indexOf(constants.URLS.token) ===  -1 && storage.get('user')) {
+          config.headers = Object.assign({}, config.headers, storage.get('user').token)
+        }
+      },
+      responseError: function (error, config, resolve, reject, scb, ecb) {
+        if (config.url.indexOf(constants.URLS.token) ===  -1
+         && defaults.manageRefreshToken
+         && config.headers && (config.headers.AnonymousToken || config.headers.Authorization)
+         && error.status === 401
+         && error.data && error.data.Message === 'invalid or expired token') {
+           auth.__handleRefreshToken__.call(scope, error)
+           .then(response => {
+             this.request(config, scb, ecb);
+           })
+           .catch(error => {
+             ecb && ecb(error);
+             reject(error);
+           })
+        }
+      }
+    }
+
+    // expose backand namespace to window
     window['backand'] = {
       service,
       constants,
@@ -58,5 +86,6 @@ import * as files from './services/files'
       storage.get('user') && storage.get('user').token.Authorization && socket.connect(storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName)
       window['backand'].socket = socket;
     }
+
   }
 })();

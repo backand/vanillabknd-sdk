@@ -4,18 +4,30 @@ export default class Socket {
       console.warn('SocketIO is not included');
     this.url = url;
     this.socket = io.connect(this.url, {'forceNew':true });
+    this.onArr = [];
+  }
+  on (eventName, callback) {
+    this.onArr.push({eventName, callback});
   }
   connect (token, anonymousToken, appName) {
-    console.info(`trying to establish a socket connection to ${appName} ...`);
-    this.socket.emit("login", token, anonymousToken, appName);
+    this.socket = io.connect(this.url, {'forceNew':true });
+
+    this.socket.on('connect', () => {
+      console.info(`trying to establish a socket connection to ${appName} ...`);
+      this.socket.emit("login", token, anonymousToken, appName);
+    });
 
     this.socket.on('authorized', () => {
       console.info(`socket connected`);
+      this.onArr.forEach(fn => {
+        this.socket.on(fn.eventName, data => {
+          fn.callback(data);
+        });
+      });
     });
 
     this.socket.on('notAuthorized', () => {
-      setTimeout(this.disconnect(), 1000);
-
+      setTimeout(() => this.disconnect(), 1000);
     });
 
     this.socket.on('disconnect', () => {
@@ -28,18 +40,6 @@ export default class Socket {
 
     this.socket.on('error', (error) => {
       console.warn(`error: ${error}`);
-    });
-  }
-  on (eventName, callback) {
-    this.socket.on(eventName, () => {
-      var args = [...arguments];
-      callback.apply(this.socket, args);
-    });
-  }
-  emit (eventName, data, callback) {
-    this.socket.emit(eventName, data, () => {
-      var args = [...arguments];
-      callback.apply(this.socket, args);
     });
   }
   disconnect () {

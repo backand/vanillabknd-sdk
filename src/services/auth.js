@@ -1,3 +1,4 @@
+import { Promise } from 'es6-promise'
 import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
 import defaults from './../defaults'
 
@@ -27,32 +28,35 @@ function __dispatchEvent__ (name) {
   }
 }
 function __clearAuth__ () {
-  this.storage.remove('user');
-  delete this.http.config.headers['AnonymousToken'];
-  delete this.http.config.headers['Authorization'];
+  // this.storage.remove('user');
+  // delete this.http.config.headers['AnonymousToken'];
+  // delete this.http.config.headers['Authorization'];
 }
 function __setAuth__ (data) {
   this.storage.set('user', data);
-  this.http.config.headers =
-    Object.assign(this.http.config.headers, this.storage.get('user').token)
+  // this.http.config.headers =
+  //   Object.assign(this.http.config.headers, this.storage.get('user').token)
 }
-// function _handleRefreshToken () {
-//   BKStorage.token.clear();
-//
-//   var user = BKStorage.user.get();
-//   var refreshToken;
-//   if (!user || !(refreshToken = BKStorage.user.get().refresh_token)) {
-//       return;
-//   }
-//
-//   var tokenData = {
-//       grant_type: 'password',
-//       refreshToken: refreshToken,
-//       username: username,
-//       appName: config.appName
-//   };
-//   return authenticate(tokenData);
-// };
+export function __handleRefreshToken__ (error) {
+  return new Promise((resolve, reject) => {
+    let user = this.storage.get('user');
+    if (!user || !user.details.refresh_token) {
+      reject(__generateFakeResponse__(0, '', [], 'No cached user or refreshToken found. authentication is required.'));
+    }
+    else {
+      __signinWithToken__.call(this, {
+        username: user.details.username,
+        refreshToken: user.details.refresh_token,
+      })
+      .then(response => {
+        resolve(response);
+      })
+      .catch(error => {
+        reject(error);
+      });
+    }
+  })
+};
 export function useAnonymousAuth (scb) {
   return new Promise((resolve, reject) => {
     __clearAuth__.call(this);
@@ -120,9 +124,7 @@ export function signup (email, password, confirmPassword, firstName, lastName, s
     .then(response => {
       __dispatchEvent__(EVENTS.SIGNUP);
       if(defaults.runSigninAfterSignup) {
-        return __signinWithToken__.call(this, {
-          accessToken: response.data.access_token
-        });
+        return signin.call(this, response.data.username, password);
       }
       else {
         scb && scb(response);
@@ -239,7 +241,7 @@ export function socialSignup (provider, email, scb, ecb, spec = 'left=1, top=1, 
   });
 
 }
-function __signinWithToken__ (tokenData, scb, ecb) {
+function __signinWithToken__ (tokenData) {
   return new Promise((resolve, reject) => {
     __clearAuth__.call(this);
     let data = [];
@@ -267,11 +269,9 @@ function __signinWithToken__ (tokenData, scb, ecb) {
       if (defaults.runSocket) {
         this.socket.connect(this.storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName);
       }
-      scb && scb(response);
       resolve(response);
     })
     .catch(error => {
-      ecb && ecb(error);
       reject(error);
     });
   });

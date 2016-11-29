@@ -1,3 +1,4 @@
+import { Promise } from 'es6-promise'
 import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
 
 export function uploadFile(objectName, fileActionName, filename, filedata, scb, ecb) {
