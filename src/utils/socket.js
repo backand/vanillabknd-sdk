@@ -2,14 +2,17 @@ export default class Socket {
   constructor (url) {
     if (!window.io)
       console.warn('SocketIO is not included');
-    this.url = url;
-    this.socket = io.connect(this.url, {'forceNew':true });
-    this.onArr = [];
+    else {
+      this.url = url;
+      this.onArr = [];
+      this.socket = io.connect(this.url, {'forceNew':true });
+    }
   }
   on (eventName, callback) {
     this.onArr.push({eventName, callback});
   }
   connect (token, anonymousToken, appName) {
+    this.disconnect();
     this.socket = io.connect(this.url, {'forceNew':true });
 
     this.socket.on('connect', () => {

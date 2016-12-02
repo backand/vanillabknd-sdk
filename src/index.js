@@ -61,7 +61,6 @@ import * as files from './services/files'
       responseError: function (error, config, resolve, reject, scb, ecb) {
         if (config.url.indexOf(constants.URLS.token) ===  -1
          && defaults.manageRefreshToken
-         && config.headers && (config.headers.AnonymousToken || config.headers.Authorization)
          && error.status === 401
          && error.data && error.data.Message === 'invalid or expired token') {
            auth.__handleRefreshToken__.call(scope, error)
@@ -72,6 +71,10 @@ import * as files from './services/files'
              ecb && ecb(error);
              reject(error);
            })
+        }
+        else {
+          ecb && ecb(error);
+          reject(error);
         }
       }
     }

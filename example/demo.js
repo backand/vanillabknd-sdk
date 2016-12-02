@@ -52,7 +52,7 @@
       btn.style.borderColor = socialProviders[provider].css.backgroundColor;
 
       btn.onclick = function(e) {
-        app.socialSignin(e.srcElement.value, successCallback, errorCallback)
+        app.socialSignin(e.target .value, successCallback, errorCallback)
       };
 
       document.getElementById('social_btns').appendChild(btn);

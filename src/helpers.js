@@ -26,5 +26,5 @@ export const sort = {
 }
 
 export const exclude = {
-  options: { metadata: "metadata", totalRows: "totalRows", all: "metadata&totalRows" }
+  options: { metadata: "metadata", totalRows: "totalRows", all: "metadata,totalRows" }
 }

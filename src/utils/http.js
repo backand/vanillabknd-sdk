@@ -61,15 +61,23 @@ class Http {
       req.onreadystatechange = () => {
         if (req.readyState == XMLHttpRequest.DONE) {
           let res = this._createResponse(req);
-          if(res.status === 200){
-            config.interceptors.response && config.interceptors.response.call(this, res, config, resolve, reject, scb, ecb);
-            scb && scb(res);
-            resolve(res);
+          if (res.status === 200){
+            if (config.interceptors.response) {
+              config.interceptors.response.call(this, res, config, resolve, reject, scb, ecb);
+            }
+            else {
+              scb && scb(res);
+              resolve(res);
+            }
           }
           else {
-            config.interceptors.responseError && config.interceptors.responseError.call(this, res, config, resolve, reject, scb, ecb);
-            ecb && ecb(res);
-            reject(res);
+            if (config.interceptors.responseError) {
+              config.interceptors.responseError.call(this, res, config, resolve, reject, scb, ecb);
+            }
+            else {
+              ecb && ecb(res);
+              reject(res);
+            }
           }
         }
       }

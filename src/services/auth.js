@@ -2,9 +2,6 @@ import { Promise } from 'es6-promise'
 import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
 import defaults from './../defaults'
 
-export function __initiate__ () {
-  this.storage.get('user') && __setAuth__.call(this, this.storage.get('user'));
-}
 function __generateFakeResponse__ (status = 0, statusText = '', headers = [], data = '') {
   return {
     status,
@@ -26,16 +23,6 @@ function __dispatchEvent__ (name) {
     event.eventName = name;
     window.fireEvent('on' + event.eventType, event);
   }
-}
-function __clearAuth__ () {
-  // this.storage.remove('user');
-  // delete this.http.config.headers['AnonymousToken'];
-  // delete this.http.config.headers['Authorization'];
-}
-function __setAuth__ (data) {
-  this.storage.set('user', data);
-  // this.http.config.headers =
-  //   Object.assign(this.http.config.headers, this.storage.get('user').token)
 }
 export function __handleRefreshToken__ (error) {
   return new Promise((resolve, reject) => {
@@ -59,23 +46,31 @@ export function __handleRefreshToken__ (error) {
 };
 export function useAnonymousAuth (scb) {
   return new Promise((resolve, reject) => {
-    __clearAuth__.call(this);
-    __setAuth__.call(this, {
+    let details = {
+      "access_token": defaults.anonymousToken,
+      "token_type": "AnonymousToken",
+      "expires_in": 0,
+      "appName": defaults.appName,
+      "username": "anonymous",
+      "role": "User",
+      "firstName": "anonymous",
+      "lastName": "anonymous",
+      "fullName": "anonymous anonymous",
+      "regId": 0 ,
+      "userId": null
+    }
+    this.storage.set('user', {
       token: {
         AnonymousToken: defaults.anonymousToken
       },
-      details: {
-        username: 'anonymous',
-        name: 'anonymous user'
-      }
+      details,
     });
-    scb && scb(__generateFakeResponse__(200, 'OK', [], this.storage.get('user')));
-    resolve(__generateFakeResponse__(200, 'OK', [], this.storage.get('user')));
+    scb && scb(__generateFakeResponse__(200, 'OK', [], details));
+    resolve(__generateFakeResponse__(200, 'OK', [], details));
   });
 }
 export function signin (username, password, scb, ecb) {
   return new Promise((resolve, reject) => {
-    __clearAuth__.call(this);
     this.http({
       url: URLS.token,
       method: 'POST',
@@ -85,7 +80,7 @@ export function signin (username, password, scb, ecb) {
       data: `username=${username}&password=${password}&appName=${defaults.appName}&grant_type=password`
     })
     .then(response => {
-      __setAuth__.call(this, {
+      this.storage.set('user', {
         token: {
           Authorization: `Bearer ${response.data.access_token}`
         },
@@ -106,7 +101,6 @@ export function signin (username, password, scb, ecb) {
 }
 export function signup (email, password, confirmPassword, firstName, lastName, scb, ecb) {
   return new Promise((resolve, reject) => {
-    __clearAuth__.call(this);
     this.http({
       url: URLS.signup,
       method: 'POST',
@@ -144,60 +138,45 @@ export function signup (email, password, confirmPassword, firstName, lastName, s
 function __getSocialUrl__ (providerName, isSignup, isAutoSignUp) {
   let provider = SOCIAL_PROVIDERS[providerName];
   let action = isSignup ? 'up' : 'in';
-  let autoSignUpParam = (!isSignup && isAutoSignUp) ? "&signupIfNotSignedIn=true" : '';
+  let autoSignUpParam = `&signupIfNotSignedIn=${(!isSignup && isAutoSignUp) ? 'true' : 'false'}`;
   return `/user/socialSign${action}?provider=${provider.label}${autoSignUpParam}&response_type=token&client_id=self&redirect_uri=${provider.url}&state=`;
 }
-function __checkSocialAuthWindowForData__ (socialAuthWindow) {
-  let timer = setInterval(() => {
-    if(socialAuthWindow.closed) { clearInterval(timer); }
-    let locationCopy = Object.assign({}, socialAuthWindow.location);
-    let dataMatch = /\?(data|error)=(.+)/.exec(locationCopy.href);
-    if (dataMatch && dataMatch[1] && dataMatch[2]) {
-       clearInterval(timer);
-       let data = dataMatch[1] === 'data' ?
-        __generateFakeResponse__(200, 'OK', [], JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))) :
-        __generateFakeResponse__(0, '', [], JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, ''))))
-        socialAuthWindow.opener.postMessage(JSON.stringify(data), locationCopy.origin);
-    }
-  }, 333);
-}
-function __socialAuth__ (provider, isSignUp, spec, email, scb, ecb) {
+function __socialAuth__ (provider, isSignUp, spec, email) {
   return new Promise((resolve, reject) => {
     if (!SOCIAL_PROVIDERS[provider]) {
       ecb && ecb(__generateFakeResponse__(0, '', [], 'Unknown Social Provider'));
       reject(__generateFakeResponse__(0, '', [], 'Unknown Social Provider'));
     }
-    let windowUrl =  `${defaults.apiUrl}/1/${__getSocialUrl__(provider, isSignUp, true)}&appname=${defaults.appName}${email ? '&email='+email : ''}&returnAddress=`
-    let socialAuthWindow = window.open('', '', spec);
-    socialAuthWindow.location = windowUrl;
-    socialAuthWindow.focus();
-    window.addEventListener('message', e => {
+    let url =  `${defaults.apiUrl}/1/${__getSocialUrl__(provider, isSignUp, true)}&appname=${defaults.appName}${email ? '&email='+email : ''}&returnAddress=${location.href}`
+    let popup = window.open('', '_blank', spec);
+    popup.location = url;
+    if (popup && popup.location) { popup.focus() }
+
+    var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+    var eventer = window[eventMethod];
+    var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+    eventer(messageEvent, e => {
       let origin = e.origin || e.originalEvent.origin;
       if (origin !== location.origin) {
         ecb && ecb(this._generateFakeResponse(0, '', [], 'Unknown Origin Message'));
         reject(this._generateFakeResponse(0, '', [], 'Unknown Origin Message'));
       }
       window.removeEventListener('message', null, false);
-      socialAuthWindow.close();
-      // setTimeout(socialAuthWindow = null, 1000);
+      popup.close();
 
       let res = JSON.parse(e.data)
       if (res.status != 200) {
-        ecb && ecb(res);
         reject(res);
       }
       else {
-        scb && scb(res);
         resolve(res);
       }
     }, false);
-    __checkSocialAuthWindowForData__(socialAuthWindow);
   });
 }
-export function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=600, height=600') {
+export function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=500, height=560') {
   return new Promise((resolve, reject) => {
-    __clearAuth__.call(this);
-    __socialAuth__(provider, false, spec, null, scb, ecb)
+    __socialAuth__(provider, false, spec, '')
       .then(response => {
         __dispatchEvent__(EVENTS.SIGNUP);
         return __signinWithToken__.call(this, {
@@ -214,10 +193,9 @@ export function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=6
       });
   });
 };
-export function socialSignup (provider, email, scb, ecb, spec = 'left=1, top=1, width=600, height=600') {
+export function socialSignup (provider, email, scb, ecb, spec = 'left=1, top=1, width=500, height=560') {
   return new Promise((resolve, reject) => {
-    __clearAuth__.call(this);
-    _socialAuth(provider, true, spec, email, scb, ecb)
+    _socialAuth(provider, true, spec, email)
       .then(response => {
         __dispatchEvent__(EVENTS.SIGNUP);
         if(defaults.runSigninAfterSignup) {
@@ -243,7 +221,6 @@ export function socialSignup (provider, email, scb, ecb, spec = 'left=1, top=1, 
 }
 function __signinWithToken__ (tokenData) {
   return new Promise((resolve, reject) => {
-    __clearAuth__.call(this);
     let data = [];
     for (let obj in tokenData) {
         data.push(encodeURIComponent(obj) + '=' + encodeURIComponent(tokenData[obj]));
@@ -259,7 +236,7 @@ function __signinWithToken__ (tokenData) {
       data: `${data}&appName=${defaults.appName}&grant_type=password`
     })
     .then(response => {
-      __setAuth__.call(this, {
+      this.storage.set('user', {
         token: {
           Authorization: `Bearer ${response.data.access_token}`
         },
@@ -307,9 +284,47 @@ export function changePassword (oldPassword, newPassword, scb, ecb) {
   }, scb, ecb)
 }
 export function signout (scb) {
-  __clearAuth__.call(this);
-  __dispatchEvent__(EVENTS.SIGNOUT);
+  return new Promise((resolve, reject) => {
+    this.storage.remove('user');
+    if (defaults.runSocket) {
+      this.socket.disconnect();
+    }
+    __dispatchEvent__(EVENTS.SIGNOUT);
+    scb && scb(__generateFakeResponse__(200, 'OK', [], this.storage.get('user')));
+    resolve(__generateFakeResponse__(200, 'OK', [], this.storage.get('user')));
+  });
 }
-export function getUserDetails() {
-  return this.storage.get('user').details;
+export function getUserDetails(scb, ecb) {
+  return new Promise((resolve, reject) => {
+    let user = this.storage.get('user');
+    if (!user) {
+      ecb && ecb(__generateFakeResponse__(0, '', [], 'No cached user found. authentication is required.'));
+      reject(__generateFakeResponse__(0, '', [], 'No cached user found. authentication is required.'));
+    }
+    else {
+      scb && scb(__generateFakeResponse__(200, 'OK', [], user.details));
+      resolve(__generateFakeResponse__(200, 'OK', [], user.details));
+    }
+  });
 }
+
+
+// get data from url in social sign-in popup
+(() => {
+  let dataMatch = /\?(data|error)=(.+)/.exec(location.href);
+  if (dataMatch && dataMatch[1] && dataMatch[2]) {
+    let data = {
+      data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
+    }
+    data.status = (dataMatch[1] === 'data') ? 200 : 0;
+    window.opener.postMessage(JSON.stringify(data), location.origin);
+
+    // var isIE = false || !!document.documentMode;
+    // if (!isIE) {
+    //   window.opener.postMessage(JSON.stringify(data), location.origin);
+    // }
+    // else {
+    //   window.parent.postMessage(JSON.stringify(data), location.origin);
+    // }
+  }
+})();
