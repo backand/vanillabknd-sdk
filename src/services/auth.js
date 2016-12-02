@@ -195,7 +195,7 @@ export function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=5
 };
 export function socialSignup (provider, email, scb, ecb, spec = 'left=1, top=1, width=500, height=560') {
   return new Promise((resolve, reject) => {
-    _socialAuth(provider, true, spec, email)
+    __socialAuth__(provider, true, spec, email)
       .then(response => {
         __dispatchEvent__(EVENTS.SIGNUP);
         if(defaults.runSigninAfterSignup) {
