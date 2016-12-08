@@ -75,7 +75,6 @@ config:
 - **socketUrl** - Sets the socket url of backand servers (String) (Default: 'https://socket.backand.com') *optional*
 - **isMobile** - Determines whether the sdk run on mobile platform (Boolean) (Default: false) *optional*
 
-
 #### Properties:
 | Name                     | Description                                              |
 |--------------------------|----------------------------------------------------------|
@@ -84,10 +83,6 @@ config:
 | helpers                  | entry point to the sdk helpers (filter, sort, exclude)   |
 | socket (runSocket: true) | entry point to the sdk socket functions (on)             |
 
-
-**NOTE:**
-- **scb == Success Callback, ecb == Error Callback**
-- **All Methods return Promise -> .then() .catch() are available**
 #### Methods backand.service:
 ##### auth:
 | Name                                                                     | Syntax                                                                                                                          |
@@ -125,6 +120,9 @@ config:
 |-------------------|----------------------------------------|
 | on(eventName, cb) | backand.socket.on(eventName, data=>{}) |
 
+**NOTE:**
+- **scb == Success Callback, ecb == Error Callback**
+- **All Methods return Promise -> .then() .catch() are available**
 
 #### Events:
 | Name    | Description           | Syntax                                                                     |
