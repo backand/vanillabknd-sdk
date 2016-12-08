@@ -7,11 +7,11 @@ import babelify from 'babelify';
 import buffer from 'vinyl-buffer';
 import uglify from 'gulp-uglify';
 import sourcemaps from 'gulp-sourcemaps';
-import livereload from 'gulp-livereload';
+import rename from 'gulp-rename';
 
 const paths = {
     src:  { js: './src/index.js'},
-    dest: { js: './dist'}
+    dest: { js: './dist', example: './example'}
 };
 
 gulp.task('clean', function () {
@@ -23,13 +23,15 @@ gulp.task('build', ['clean'], ()=> {
   return browserify({ entries: paths.src.js, debug: true })
   	.transform("babelify")
     .bundle()
-    // .on('error',gutil.log)
     .pipe(source('backand.js'))
     .pipe(buffer())
+    .pipe(gulp.dest(paths.dest.js))
     .pipe(sourcemaps.init())
     .pipe(uglify())
+    .pipe(rename('backand.min.js'))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest(paths.dest.js))
+    .pipe(gulp.dest(paths.dest.example))
 });
 
 gulp.task('watch', ()=> {

@@ -5,13 +5,13 @@ export const EVENTS = {
 };
 
 export const URLS = {
-  token: '/token',
-  signup: '/1/user/signup',
-  requestResetPassword: '/1/user/requestResetPassword',
-  resetPassword: '/1/user/resetPassword',
-  changePassword: '/1/user/changePassword',
-  objects: '/1/objects',
-  objectsAction: '/1/objects/action'
+  token: 'token',
+  signup: '1/user/signup',
+  requestResetPassword: '1/user/requestResetPassword',
+  resetPassword: '1/user/resetPassword',
+  changePassword: '1/user/changePassword',
+  objects: '1/objects',
+  objectsAction: '1/objects/action'
 };
 
 export const SOCIAL_PROVIDERS = {

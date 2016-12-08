@@ -5,7 +5,19 @@ class Http {
     if (!window.XMLHttpRequest)
       throw new Error('XMLHttpRequest is not supported by the browser');
 
-    this.config = Object.assign({url: '/', method: 'GET', headers: {}}, config)
+    this.config = Object.assign({
+      // url: '/',
+      method: 'GET',
+      headers: {},
+      params: {},
+      withCredentials: false,
+      responseType: 'json',
+      // timeout: null,
+      auth: {
+       username: null,
+       password: null
+      }
+    }, config)
   }
   _getHeaders (headers) {
     return headers.split('\r\n').filter(header => header).map(header => {
@@ -26,13 +38,30 @@ class Http {
       return JSON.parse(data);
     }
   }
-  _createResponse (req) {
+  _createResponse (req, config) {
     return {
       status: req.status,
       statusText: req.statusText,
       headers: this._getHeaders(req.getAllResponseHeaders()),
-      data: this._getData(req.getResponseHeader("Content-Type"), req.responseText)
+      config,
+      data: this._getData(req.getResponseHeader("Content-Type"), req.responseText),
     }
+  }
+  _handleError (data, config) {
+    return {
+      status: 0,
+      statusText: 'ERROR',
+      headers: [],
+      config,
+      data,
+    }
+  }
+  _encodeParams (params) {
+    let paramsArr = [];
+    for (let param in params) {
+      paramsArr.push(`${param}=${encodeURI(JSON.stringify(params[param]))}`)
+    }
+    return paramsArr.join('&');
   }
   _setHeaders (req, headers) {
     for (let header in headers) {
@@ -53,14 +82,33 @@ class Http {
   }
   request (cfg, scb , ecb) {
     return new Promise((resolve, reject) => {
+
       let req = new XMLHttpRequest();
       let config = Object.assign({}, this.config, cfg);
-      config.interceptors.request && config.interceptors.request(config);
 
-      req.open(config.method, `${config.baseURL ? config.baseURL+'/' : ''}${config.url}`, true);
+      if (!config.url || typeof config.url !== 'string' || config.url.length === 0) {
+        let res = this._handleError('url parameter is missing', config);
+        ecb && ecb(res);
+        reject(res);
+      }
+      if (config.withCredentials) { req.withCredentials = true }
+      if (config.timeout) { req.timeout = true }
+      config.interceptors.request && config.interceptors.request.call(this, config);
+      let params = this._encodeParams(config.params);
+      req.open(config.method, `${config.baseURL ? config.baseURL+'/' : ''}${config.url}${params ? '?'+params : ''}`, true, config.auth.username, config.auth.password);
+      req.ontimeout = function() {
+        let res = this._handleError('timeout', config);
+        ecb && ecb(res);
+        reject(res);
+      };
+      req.onabort = function() {
+        let res = this._handleError('abort', config);
+        ecb && ecb(res);
+        reject(res);
+      };
       req.onreadystatechange = () => {
         if (req.readyState == XMLHttpRequest.DONE) {
-          let res = this._createResponse(req);
+          let res = this._createResponse(req, config);
           if (res.status === 200){
             if (config.interceptors.response) {
               config.interceptors.response.call(this, res, config, resolve, reject, scb, ecb);
@@ -87,7 +135,6 @@ class Http {
   }
 
 }
-
 function createInstance(config = {}) {
   var context = new Http(config);
   var instance = (...args) => Http.prototype.request.apply(context, args);

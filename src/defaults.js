@@ -7,7 +7,7 @@ export default {
   storageType: 'local',
   manageRefreshToken: true,
   runSigninAfterSignup: true,
-  runSocket: true,
+  runSocket: false,
   socketUrl: 'https://socket.backand.com',
   isMobile: false,
 };

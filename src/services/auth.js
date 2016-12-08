@@ -65,6 +65,10 @@ export function useAnonymousAuth (scb) {
       },
       details,
     });
+    __dispatchEvent__(EVENTS.SIGNIN);
+    if (defaults.runSocket) {
+      this.socket.connect(null, defaults.anonymousToken, defaults.appName);
+    }
     scb && scb(__generateFakeResponse__(200, 'OK', [], details));
     resolve(__generateFakeResponse__(200, 'OK', [], details));
   });
@@ -144,39 +148,47 @@ function __getSocialUrl__ (providerName, isSignup, isAutoSignUp) {
 function __socialAuth__ (provider, isSignUp, spec, email) {
   return new Promise((resolve, reject) => {
     if (!SOCIAL_PROVIDERS[provider]) {
-      ecb && ecb(__generateFakeResponse__(0, '', [], 'Unknown Social Provider'));
       reject(__generateFakeResponse__(0, '', [], 'Unknown Social Provider'));
     }
-    let url =  `${defaults.apiUrl}/1/${__getSocialUrl__(provider, isSignUp, true)}&appname=${defaults.appName}${email ? '&email='+email : ''}&returnAddress=${location.href}`
-    let popup = window.open('', '_blank', spec);
-    popup.location = url;
-    if (popup && popup.location) { popup.focus() }
+    let url =  `${defaults.apiUrl}/1/${__getSocialUrl__(provider, isSignUp, true)}&appname=${defaults.appName}${email ? '&email='+email : ''}&returnAddress=` // ${location.href}
+    let popup = null;
+    if (!this.isIE) {
+      popup = window.open(url, 'socialpopup', spec);
+    }
+    else {
+      popup = window.open('', '', spec);
+      popup.location = url;
+    }
+    if (popup && popup.focus) { popup.focus() }
 
-    var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
-    var eventer = window[eventMethod];
-    var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
-    eventer(messageEvent, e => {
-      let origin = e.origin || e.originalEvent.origin;
-      if (origin !== location.origin) {
-        ecb && ecb(this._generateFakeResponse(0, '', [], 'Unknown Origin Message'));
-        reject(this._generateFakeResponse(0, '', [], 'Unknown Origin Message'));
+    let handler = function(e) {
+      let url = e.type === 'message' ? e.origin : e.url;
+      if (url.indexOf(location.href) === -1) {
+        reject(__generateFakeResponse__(0, '', [], 'Unknown Origin Message'));
       }
-      window.removeEventListener('message', null, false);
-      popup.close();
 
-      let res = JSON.parse(e.data)
+      let res = e.type === 'message' ? JSON.parse(e.data) : JSON.parse(e.newValue);
+      window.removeEventListener(e.type, handler, false);
+      if (popup && popup.close) { popup.close() }
+      e.type == 'Storage' && localStorage.removeItem(e.key);
+
       if (res.status != 200) {
         reject(res);
       }
       else {
         resolve(res);
       }
-    }, false);
+
+    }
+    handler = handler.bind(popup);
+
+    window.addEventListener('storage', handler , false);
+    // window.addEventListener('message', handler, false);
   });
 }
 export function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=500, height=560') {
   return new Promise((resolve, reject) => {
-    __socialAuth__(provider, false, spec, '')
+    __socialAuth__.call(this, provider, false, spec, '')
       .then(response => {
         __dispatchEvent__(EVENTS.SIGNUP);
         return __signinWithToken__.call(this, {
@@ -195,7 +207,7 @@ export function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=5
 };
 export function socialSignup (provider, email, scb, ecb, spec = 'left=1, top=1, width=500, height=560') {
   return new Promise((resolve, reject) => {
-    __socialAuth__(provider, true, spec, email)
+    __socialAuth__.call(this, provider, true, spec, email)
       .then(response => {
         __dispatchEvent__(EVENTS.SIGNUP);
         if(defaults.runSigninAfterSignup) {
@@ -249,6 +261,7 @@ function __signinWithToken__ (tokenData) {
       resolve(response);
     })
     .catch(error => {
+      console.log(error);
       reject(error);
     });
   });
@@ -317,14 +330,10 @@ export function getUserDetails(scb, ecb) {
       data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
     }
     data.status = (dataMatch[1] === 'data') ? 200 : 0;
-    window.opener.postMessage(JSON.stringify(data), location.origin);
-
+    localStorage.setItem('SOCIAL_DATA', JSON.stringify(data));
     // var isIE = false || !!document.documentMode;
     // if (!isIE) {
     //   window.opener.postMessage(JSON.stringify(data), location.origin);
-    // }
-    // else {
-    //   window.parent.postMessage(JSON.stringify(data), location.origin);
     // }
   }
 })();

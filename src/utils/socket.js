@@ -1,12 +1,10 @@
 export default class Socket {
   constructor (url) {
     if (!window.io)
-      console.warn('SocketIO is not included');
-    else {
-      this.url = url;
-      this.onArr = [];
-      this.socket = io.connect(this.url, {'forceNew':true });
-    }
+      throw new Error('runSocket is true but socketio-client is not included');
+    this.url = url;
+    this.onArr = [];
+    this.socket = null;
   }
   on (eventName, callback) {
     this.onArr.push({eventName, callback});

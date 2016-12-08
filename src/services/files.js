@@ -1,9 +1,9 @@
 import { Promise } from 'es6-promise'
 import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
 
-export function uploadFile(objectName, fileActionName, filename, filedata, scb, ecb) {
+export function uploadFile (object, fileAction, filename, filedata, scb, ecb) {
   return this.http({
-    url: `${URLS.objectsAction}/${objectName}?name=${fileActionName}`,
+    url: `${URLS.objectsAction}/${object}?name=${fileAction}`,
     method: 'POST',
     data: {
         filename,
@@ -11,9 +11,9 @@ export function uploadFile(objectName, fileActionName, filename, filedata, scb, 
       }
   }, scb, ecb)
 }
-export function deleteFile(objectName, fileActionName, filename, scb, ecb) {
+export function deleteFile (object, fileAction, filename, scb, ecb) {
   return this.http({
-    url: `${URLS.objectsAction}/${objectName}?name=${fileActionName}`,
+    url: `${URLS.objectsAction}/${object}?name=${fileAction}`,
     method: 'DELETE',
     data: {
         filename,

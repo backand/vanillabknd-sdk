@@ -38,6 +38,7 @@ import * as files from './services/files'
     let scope = {
       storage,
       http,
+      isIE: false || !!document.documentMode,
     }
     let socket = null;
     if (defaults.runSocket) {
@@ -86,7 +87,7 @@ import * as files from './services/files'
       helpers,
     };
     if(defaults.runSocket) {
-      storage.get('user') && storage.get('user').token.Authorization && socket.connect(storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName)
+      storage.get('user') && socket.connect(storage.get('user').token.Authorization || null, defaults.anonymousToken, defaults.appName)
       window['backand'].socket = socket;
     }
 

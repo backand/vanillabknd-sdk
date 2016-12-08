@@ -7,7 +7,12 @@
 (function () {
 
     // init backand
-    backand.initiate({appName: 'sdk', signUpToken: '851692ae-eb94-4f18-87ee-075255e67748', anonymousToken: '82cfcfe8-c718-4621-8bb6-cd600e23487f'});
+    backand.initiate({
+      appName: 'sdk',
+      signUpToken: '851692ae-eb94-4f18-87ee-075255e67748',
+      anonymousToken: '82cfcfe8-c718-4621-8bb6-cd600e23487f',
+      runSocket: true
+    });
     var app = backand.service;
 
     var outputContainer = document.getElementById('outputContainer');
