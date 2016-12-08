@@ -84,6 +84,10 @@ config:
 | helpers                  | entry point to the sdk helpers (filter, sort, exclude)   |
 | socket (runSocket: true) | entry point to the sdk socket functions (on)             |
 
+
+**NOTE:**
+- **scb == Success Callback, ecb == Error Callback**
+- **All Methods return Promise -> .then() .catch() are available**
 #### Methods backand.service:
 ##### auth:
 | Name                                                                     | Syntax                                                                                                                          |
