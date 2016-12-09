@@ -10,7 +10,7 @@ import sourcemaps from 'gulp-sourcemaps';
 import rename from 'gulp-rename';
 
 const paths = {
-    src:  { js: './src/index.js'},
+    src:  { js: './src/index.js', http: './src/utils/http.js'},
     dest: { js: './dist', example: './example'}
 };
 
@@ -34,8 +34,25 @@ gulp.task('build', ['clean'], ()=> {
     .pipe(gulp.dest(paths.dest.example))
 });
 
+
+gulp.task('http', ['clean'], ()=> {
+  return browserify({ entries: paths.src.http, debug: true })
+  	.transform("babelify")
+    .bundle()
+    .pipe(source('http.js'))
+    .pipe(buffer())
+    .pipe(gulp.dest(paths.dest.js))
+    .pipe(sourcemaps.init())
+    .pipe(uglify())
+    .pipe(rename('http.min.js'))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(paths.dest.js))
+});
+
+
+
 gulp.task('watch', ()=> {
-  gulp.watch('./src/**/*.js', ['build']);
+  gulp.watch('./src/**/*.js', ['build', 'http']);
 });
 
 gulp.task('default', ['build']);

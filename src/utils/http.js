@@ -10,6 +10,7 @@ class Http {
       method: 'GET',
       headers: {},
       params: {},
+      interceptors: {},
       withCredentials: false,
       responseType: 'json',
       // timeout: null,
@@ -141,9 +142,11 @@ function createInstance(config = {}) {
   instance.config = context.config;
   return instance;
 }
-export default createInstance;
 
-// var context = new Http(config);
-// var instance = (...args) => httpClient.prototype.request.apply(context, args);
-// instance.config = context.config;
-// export default instance;
+var http = window.http || createInstance();
+http.create = (config) => {
+  return createInstance(config);
+};
+
+export default http;
+window.http = http;

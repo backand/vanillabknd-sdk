@@ -1,4 +1,3 @@
-import { Promise } from 'es6-promise'
 import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
 
 function __allowedParams__ (allowedParams, params) {
@@ -48,5 +47,12 @@ export function remove (object, id, scb, ecb) {
   return this.http({
     url: `${URLS.objects}/${object}/${id}`,
     method: 'DELETE',
+  }, scb, ecb)
+}
+export function trigger (object, fileAction, data = {}, scb, ecb) {
+  return this.http({
+    url: `${URLS.objectsAction}/${object}?name=${fileAction}`,
+    method: 'POST',
+    data,
   }, scb, ecb)
 }

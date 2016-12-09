@@ -32,7 +32,7 @@ import * as files from './services/files'
 
     // init globals
     let storage = new Storage(defaults.storageType, defaults.storagePrefix);
-    let http = Http({
+    let http = Http.create({
       baseURL: defaults.apiUrl
     });
     let scope = {
