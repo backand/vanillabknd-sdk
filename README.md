@@ -1,7 +1,7 @@
 javascriptknd-sdk
 ===
-[![npm version](https://img.shields.io/npm/v/vanillabknd-sdk.svg?style=flat-square)](https://www.npmjs.org/package/vanillabknd-sdk)
-[![npm downloads](https://img.shields.io/npm/dm/vanillabknd-sdk.svg?style=flat-square)](http://npm-stat.com/charts.html?package=vanillabknd-sdk)
+[![npm version](https://img.shields.io/npm/v/javascriptknd-sdk.svg?style=flat-square)](https://www.npmjs.org/package/javascriptknd-sdk)
+[![npm downloads](https://img.shields.io/npm/dm/javascriptknd-sdk.svg?style=flat-square)](http://npm-stat.com/charts.html?package=javascriptknd-sdk)
 
 >  Backand SDK for JavaScript
 This SDK enables you to communicate comfortably and quickly with your Backand app.
@@ -11,7 +11,7 @@ It requires zero configurations, no installations and no requirements.
 ## Installation
 - NPM:
 ```bash
-$ npm i -S vanillabknd-sdk
+$ npm i -S javascriptknd-sdk
 ```
 ```javascript
 import backand from 'backand'
@@ -136,7 +136,7 @@ config:
 
 
 ## Examples
-***To view the demo web page, just run npm start - [example page](https://github.com/backand/vanillabknd-sdk/blob/master/example/).***
+***To view the demo web page, just run npm start - [example page](https://github.com/backand/javascriptknd-sdk/blob/master/example/).***
 
 
 ## License
