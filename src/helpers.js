@@ -28,3 +28,41 @@ export const sort = {
 export const exclude = {
   options: { metadata: "metadata", totalRows: "totalRows", all: "metadata,totalRows" }
 }
+
+export class StorageAbstract {
+  constructor() {
+    if (this.constructor === StorageAbstract) {
+      throw new TypeError("Can not construct abstract class.");
+    }
+    if (this.setItem === undefined || this.setItem === StorageAbstract.prototype.setItem) {
+      throw new TypeError("Must override setItem method.");
+    }
+    if (this.getItem === undefined || this.getItem === StorageAbstract.prototype.getItem) {
+      throw new TypeError("Must override getItem method.");
+    }
+    if (this.removeItem === undefined || this.removeItem === StorageAbstract.prototype.removeItem) {
+      throw new TypeError("Must override removeItem method.");
+    }
+    if (this.clear === undefined || this.clear === StorageAbstract.prototype.clear) {
+      throw new TypeError("Must override clear method.");
+    }
+    // this.data = {};
+  }
+  setItem (id, val) {
+    throw new TypeError("Do not call abstract method setItem from child.");
+    // return this.data[id] = String(val);
+  }
+  getItem (id) {
+    throw new TypeError("Do not call abstract method getItem from child.");
+    // return this.data.hasOwnProperty(id) ? this._data[id] : null;
+  }
+  removeItem (id) {
+    throw new TypeError("Do not call abstract method removeItem from child.");
+    // delete this.data[id];
+    // return null;
+   }
+  clear () {
+    throw new TypeError("Do not call abstract method clear from child.");
+    // return this.data = {};
+   }
+}

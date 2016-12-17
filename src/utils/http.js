@@ -3,7 +3,7 @@ import { Promise } from 'es6-promise'
 class Http {
   constructor (config = {}) {
     if (!window.XMLHttpRequest)
-      throw new Error('XMLHttpRequest is not supported by the browser');
+      throw new Error('XMLHttpRequest is not supported by this platform');
 
     this.config = Object.assign({
       // url: '/',
@@ -60,7 +60,11 @@ class Http {
   _encodeParams (params) {
     let paramsArr = [];
     for (let param in params) {
-      paramsArr.push(`${param}=${encodeURI(JSON.stringify(params[param]))}`)
+      let val = params[param];
+      if (typeof val === 'object') {
+        val = JSON.stringify(val);
+      }
+      paramsArr.push(`${param}=${encodeURIComponent(val)}`)
     }
     return paramsArr.join('&');
   }
@@ -143,10 +147,10 @@ function createInstance(config = {}) {
   return instance;
 }
 
-var http = window.http || createInstance();
+var http = createInstance();
 http.create = (config) => {
   return createInstance(config);
 };
 
 export default http;
-window.http = http;
+window.http = window.http || http;

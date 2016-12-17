@@ -147,7 +147,7 @@ describe('Backand.initiate', () => {
   });
   describe('Backand.helpers', () => {
     it('should have some impotant keys', () => {
-      expect(backand.helpers).to.have.all.keys('filter', 'sort', 'exclude');
+      expect(backand.helpers).to.have.all.keys('filter', 'sort', 'exclude', 'StorageAbstract');
     });
   });
   describe('Backand.constants', () => {

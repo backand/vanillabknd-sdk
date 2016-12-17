@@ -20,7 +20,7 @@ gulp.task('clean', function () {
 });
 
 gulp.task('build', ['clean'], ()=> {
-  return browserify({ entries: paths.src.js, debug: true })
+  return browserify({ entries: paths.src.js, standalone: 'backand', debug: true })
   	.transform("babelify")
     .bundle()
     .pipe(source('backand.js'))

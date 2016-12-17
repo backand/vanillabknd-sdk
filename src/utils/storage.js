@@ -1,10 +1,12 @@
 export default class Storage {
-  constructor (type, prefix = '') {
-    if (!window[type + 'Storage'])
-      throw new Error(type + 'Storage is not supported by the browser');
+  constructor (storage, prefix = '') {
+    if (!storage)
+      throw new Error('The provided Storage is not supported by this platform');
+    if (!storage.setItem || !storage.getItem || !storage.removeItem || !storage.clear)
+      throw new Error('The provided Storage not implement the necessary functions');
+    this.storage = storage;
     this.prefix = prefix;
     this.delimiter = '__________';
-    this.storage = window[type + 'Storage'];
   }
   get (key) {
     let item = this.storage.getItem(`${this.prefix}${key}`);
@@ -32,7 +34,7 @@ export default class Storage {
   remove (key) {
     this.storage.removeItem(`${this.prefix}${key}`);
   }
-  clear() {
+  clear () {
     for(var i =0; i < this.storage.length; i++){
        if(this.storage.getItem(this.storage.key(i)).indexOf(this.prefix) != -1)
         this.remove(this.storage.key(i))

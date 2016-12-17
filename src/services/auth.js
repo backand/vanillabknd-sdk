@@ -12,6 +12,8 @@ function __generateFakeResponse__ (status = 0, statusText = '', headers = [], da
 }
 function __dispatchEvent__ (name) {
   let event;
+  if(defaults.isMobile)
+    return;
   if (document.createEvent) {
     event = document.createEvent('Event');
     event.initEvent(name, true, true);
@@ -51,11 +53,11 @@ export function useAnonymousAuth (scb) {
       "token_type": "AnonymousToken",
       "expires_in": 0,
       "appName": defaults.appName,
-      "username": "anonymous",
+      "username": "Guest",
       "role": "User",
       "firstName": "anonymous",
       "lastName": "anonymous",
-      "fullName": "anonymous anonymous",
+      "fullName": "",
       "regId": 0 ,
       "userId": null
     }
@@ -163,14 +165,14 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
 
     let handler = function(e) {
       let url = e.type === 'message' ? e.origin : e.url;
-      if (url.indexOf(location.href) === -1) {
+      if (url.indexOf(window.location.href) === -1) {
         reject(__generateFakeResponse__(0, '', [], 'Unknown Origin Message'));
       }
 
       let res = e.type === 'message' ? JSON.parse(e.data) : JSON.parse(e.newValue);
       window.removeEventListener(e.type, handler, false);
       if (popup && popup.close) { popup.close() }
-      e.type == 'Storage' && localStorage.removeItem(e.key);
+      e.type === 'storage' && localStorage.removeItem(e.key);
 
       if (res.status != 200) {
         reject(res);
@@ -203,6 +205,67 @@ export function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=5
         ecb && ecb(error);
         reject(error);
       });
+  });
+};
+export function socialSigninWithToken (provider, token, scb, ecb) {
+  return new Promise((resolve, reject) => {
+    this.http({
+      url: URLS.socialSigninWithToken.replace('PROVIDER', provider),
+      method: 'GET',
+      params: {
+        accessToken: token,
+        appName: defaults.appName,
+        signupIfNotSignedIn: true,
+      },
+    })
+    .then(response => {
+      this.storage.set('user', {
+        token: {
+          Authorization: `Bearer ${response.data.access_token}`
+        },
+        details: response.data
+      });
+      __dispatchEvent__(EVENTS.SIGNIN);
+      if (defaults.runSocket) {
+        this.socket.connect(this.storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName);
+      }
+      // TODO:PATCH
+      this.http({
+        url: `${URLS.objects}/users`,
+        method: 'GET',
+        params: {
+          filter: [
+            {
+              "fieldName": "email",
+              "operator": "equals",
+              "value": response.data.username
+            }
+          ]
+        },
+      })
+      .then(patch => {
+        let {id, firstName, lastName} = patch.data.data[0];
+        let user = this.storage.get('user');
+        let newDetails =  {userId: id.toString(), firstName, lastName};
+        this.storage.set('user', {
+          token: user.token,
+          details: Object.assign({}, user.details, newDetails)
+        });
+        user = this.storage.get('user');
+        let res = __generateFakeResponse__(response.status, response.statusText, response.headers, user.details);
+        scb && scb(res);
+        resolve(res);
+      })
+      .catch(error => {
+        ecb && ecb(error);
+        reject(error);
+      });
+      // EOP
+    })
+    .catch(error => {
+      ecb && ecb(error);
+      reject(error);
+    });
   });
 };
 export function socialSignup (provider, email, scb, ecb, spec = 'left=1, top=1, width=500, height=560') {
@@ -307,33 +370,52 @@ export function signout (scb) {
     resolve(__generateFakeResponse__(200, 'OK', [], this.storage.get('user')));
   });
 }
-export function getUserDetails(scb, ecb) {
+function __getUserDetailsFromStorage__ () {
   return new Promise((resolve, reject) => {
     let user = this.storage.get('user');
     if (!user) {
-      ecb && ecb(__generateFakeResponse__(0, '', [], 'No cached user found. authentication is required.'));
       reject(__generateFakeResponse__(0, '', [], 'No cached user found. authentication is required.'));
     }
     else {
-      scb && scb(__generateFakeResponse__(200, 'OK', [], user.details));
       resolve(__generateFakeResponse__(200, 'OK', [], user.details));
     }
   });
 }
-
-
-// get data from url in social sign-in popup
-(() => {
-  let dataMatch = /\?(data|error)=(.+)/.exec(location.href);
-  if (dataMatch && dataMatch[1] && dataMatch[2]) {
-    let data = {
-      data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
+export function getUserDetails(scb, ecb, force = false) {
+  return new Promise((resolve, reject) => {
+    if (force) {
+      this.http({
+        url: URLS.profile,
+        method: 'GET',
+      })
+      .then(response => {
+        let user = this.storage.get('user');
+        let newDetails = response.data;
+        this.storage.set('user', {
+          token: user.token,
+          details: Object.assign({}, user.details, newDetails)
+        });
+        return __getUserDetailsFromStorage__.call(this);
+      })
+      .then(response => {
+        scb && scb(response);
+        resolve(response);
+      })
+      .catch(error => {
+        ecb && ecb(error);
+        reject(error);
+      });
     }
-    data.status = (dataMatch[1] === 'data') ? 200 : 0;
-    localStorage.setItem('SOCIAL_DATA', JSON.stringify(data));
-    // var isIE = false || !!document.documentMode;
-    // if (!isIE) {
-    //   window.opener.postMessage(JSON.stringify(data), location.origin);
-    // }
-  }
-})();
+    else {
+      __getUserDetailsFromStorage__.call(this)
+      .then(response => {
+        scb && scb(response);
+        resolve(response);
+      })
+      .catch(error => {
+        ecb && ecb(error);
+        reject(error);
+      });
+    }
+  });
+}

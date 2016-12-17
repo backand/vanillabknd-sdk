@@ -11,7 +11,11 @@ export const URLS = {
   resetPassword: '1/user/resetPassword',
   changePassword: '1/user/changePassword',
   objects: '1/objects',
-  objectsAction: '1/objects/action'
+  objectsAction: '1/objects/action',
+  // socialLoginWithCode: '1/user/PROVIDER/code',
+  // socialSingupWithCode: '1/user/PROVIDER/signupCode',
+  socialSigninWithToken: '1/user/PROVIDER/token',
+  profile: '/api/account/profile',
 };
 
 export const SOCIAL_PROVIDERS = {
