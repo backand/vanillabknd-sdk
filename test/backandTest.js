@@ -20,7 +20,7 @@ describe('Backand.initiate', () => {
         this.timeout(0);
         backand.service.useAnonymousAuth()
         .then(res => {
-          expect(res.data.username).to.eql('anonymous');
+          expect(res.data.username).to.eql('Guest');
           done();
         })
         .catch(err => {

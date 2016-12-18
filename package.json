@@ -36,5 +36,10 @@
     "mocha": "^3.2.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/backand/vanillabknd-sdk.git"
+  },
+  "homepage": "https://github.com/backand/vanillabknd-sdk#readme"
 }

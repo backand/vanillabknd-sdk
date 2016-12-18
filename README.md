@@ -1,9 +1,9 @@
-javascriptknd-sdk
+vanillabknd-sdk
 ===
-[![npm version](https://img.shields.io/npm/v/javascriptknd-sdk.svg?style=flat-square)](https://www.npmjs.org/package/javascriptknd-sdk)
-[![npm downloads](https://img.shields.io/npm/dm/javascriptknd-sdk.svg?style=flat-square)](http://npm-stat.com/charts.html?package=javascriptknd-sdk)
+[![npm version](https://img.shields.io/npm/v/vanillabknd-sdk.svg?style=flat-square)](https://www.npmjs.org/package/vanillabknd-sdk)
+[![npm downloads](https://img.shields.io/npm/dt/vanillabknd-sdk.svg?style=flat-square)](http://npm-stat.com/charts.html?package=vanillabknd-sdk)
 
->  Backand SDK for JavaScript
+>  Backand SDK for JavaScript.
 This SDK enables you to communicate comfortably and quickly with your Backand app.
 It requires zero configurations, no installations and no requirements.
 
@@ -11,16 +11,16 @@ It requires zero configurations, no installations and no requirements.
 ## Installation
 - NPM:
 ```bash
-$ npm i -S javascriptknd-sdk
+$ npm i -S vanillabknd-sdk
 ```
 ```javascript
-import backand from 'backand'
+import backand from 'vanillabknd-sdk'
 ```
 - CDN:
 ``` html
 <script src="https://cdn.backand.net/javascript/lastest/backand.min.js"></script>
 ```
-- Download/Clone this repo and include `backand.js` in your project
+- Download/Clone this repo and include `backand.min.js` in your project
 ``` html
 <script src="backand.min.js"></script>
 ```
@@ -136,7 +136,7 @@ config:
 
 
 ## Examples
-***To view the demo web page, just run npm start - [example page](https://github.com/backand/javascriptknd-sdk/blob/master/example/).***
+***To view the demo web page, just run npm start - [example page](https://github.com/backand/vanillabknd-sdk/blob/master/example/).***
 
 
 ## License
