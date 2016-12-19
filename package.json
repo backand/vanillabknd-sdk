@@ -1,6 +1,6 @@
 {
   "name": "vanillabknd-sdk",
-  "version": "3.0.0",
+  "version": "0.8.0",
   "description": "Backand SDK for JavaScript",
   "main": "./dist/backand.js",
   "files": [
