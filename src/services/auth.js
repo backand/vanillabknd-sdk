@@ -105,7 +105,7 @@ export function signin (username, password, scb, ecb) {
     });
   });
 }
-export function signup (email, password, confirmPassword, firstName, lastName, scb, ecb) {
+export function signup (email, password, confirmPassword, firstName, lastName, parameters = {}, scb, ecb) {
   return new Promise((resolve, reject) => {
     this.http({
       url: URLS.signup,
@@ -118,7 +118,8 @@ export function signup (email, password, confirmPassword, firstName, lastName, s
         lastName,
         email,
         password,
-        confirmPassword
+        confirmPassword,
+        parameters
       }
     }, scb , ecb)
     .then(response => {

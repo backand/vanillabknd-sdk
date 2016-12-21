@@ -18,7 +18,7 @@ import backand from 'vanillabknd-sdk'
 ```
 - CDN:
 ``` html
-<script src="https://cdn.backand.net/javascript/lastest/backand.min.js"></script>
+<script src="https://cdn.backand.net/javascript/dist/1.0.1/backand.min.js"></script>
 ```
 - Download/Clone this repo and include `backand.min.js` in your project
 ``` html
@@ -28,7 +28,7 @@ import backand from 'vanillabknd-sdk'
 
 ## Browser Support
 
-![Chrome](https://raw.github.com/alrra/browser-logos/master/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/edge/edge_48x48.png) | ![IE](https://github.com/alrra/browser-logos/blob/master/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
+![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Safari](https://raw.github.com/alrra/browser-logos/master/src/safari/safari_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
 --- | --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | 10+ ✔ |
 
@@ -88,18 +88,18 @@ config:
 
 #### Methods backand.service:
 ##### auth:
-| Name                                                                     | Syntax                                                                                                                          |
-|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| useAnonymousAuth (scb)                                                   | backand.service.useAnonymousAuth(data=>{})                                                                                      |
-| signin (username, password, scb, ecb)                                    | backand.service.signin(username, password, data=>{}, error=>{})                                                                 |
-| signup (email, password, confirmPassword, firstName, lastName, scb, ecb) | backand.service.signin(email, password, confirmPassword, firstName, lastName, data=>{}, error=>{})                              |
-| socialSignin (provider, scb, ecb, spec)                                  | backand.service.socialSignin(backand.constants.SOCIAL_PROVIDERS[provider].name, data=>{}, error=>{}, window.open - spec)        |
-| socialSignup (provider, email, scb, ecb, spec)                           | backand.service.socialSignup(backand.constants.SOCIAL_PROVIDERS[provider].name, email, data=>{}, error=>{}, window.open - spec) |
-| requestResetPassword (username, scb, ecb)                                | backand.service.requestResetPassword(username, data=>{}, error=>{})                                                             |
-| resetPassword (newPassword, resetToken, scb, ecb)                        | backand.service.resetPassword(newPassword, resetToken, data=>{}, error=>{})                                                     |
-| changePassword (oldPassword, newPassword, scb, ecb)                      | backand.service.changePassword(oldPassword, newPassword, data=>{}, error=>{})                                                   |
-| signout (scb)                                                            | backand.service.signout(data=>{})                                                                                               |
-| getUserDetails(scb, ecb)                                                 | backand.service.getUserDetails(data=>{}, error=>{})                                                                             |
+| Name                                                                                 | Syntax                                                                                                                          |
+|--------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| useAnonymousAuth (scb)                                                               | backand.service.useAnonymousAuth(data=>{})                                                                                      |
+| signin (username, password, scb, ecb)                                                | backand.service.signin(username, password, data=>{}, error=>{})                                                                 |
+| signup (email, password, confirmPassword, firstName, lastName, parameters, scb, ecb) | backand.service.signin(email, password, confirmPassword, firstName, lastName, parameters, data=>{}, error=>{})                  |
+| socialSignin (provider, scb, ecb, spec)                                              | backand.service.socialSignin(backand.constants.SOCIAL_PROVIDERS[provider].name, data=>{}, error=>{}, window.open - spec)        |
+| socialSignup (provider, email, scb, ecb, spec)                                       | backand.service.socialSignup(backand.constants.SOCIAL_PROVIDERS[provider].name, email, data=>{}, error=>{}, window.open - spec) |
+| requestResetPassword (username, scb, ecb)                                            | backand.service.requestResetPassword(username, data=>{}, error=>{})                                                             |
+| resetPassword (newPassword, resetToken, scb, ecb)                                    | backand.service.resetPassword(newPassword, resetToken, data=>{}, error=>{})                                                     |
+| changePassword (oldPassword, newPassword, scb, ecb)                                  | backand.service.changePassword(oldPassword, newPassword, data=>{}, error=>{})                                                   |
+| signout (scb)                                                                        | backand.service.signout(data=>{})                                                                                               |
+| getUserDetails(scb, ecb)                                                             | backand.service.getUserDetails(data=>{}, error=>{})                                                                             |
 ##### crud:
 | Name                                        | Syntax                                                                |
 |---------------------------------------------|-----------------------------------------------------------------------|
