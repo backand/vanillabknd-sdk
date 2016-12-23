@@ -18,7 +18,7 @@ let backand = {
   constants,
   helpers,
 }
-backand.initiate = (config = {}) => {
+backand.init = (config = {}) => {
 
   // combine defaults with user config
   Object.assign(defaults, config);
@@ -99,11 +99,11 @@ backand.initiate = (config = {}) => {
   }
 
   // expose backand namespace to window
-  delete backand.initiate;
-  Object.assign(backand, {service});
+  delete backand.init;
+  Object.assign(backand, service);
   if(defaults.runSocket) {
     storage.get('user') && socket.connect(storage.get('user').token.Authorization || null, defaults.anonymousToken, defaults.appName)
-    Object.assign(backand, {socket});
+    Object.assign(backand, {on: socket.on.bind(socket)});
   }
 
 }

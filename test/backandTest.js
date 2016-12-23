@@ -3,22 +3,22 @@ var lastCreatedId = null;
 
 describe('Backand.initiate', () => {
   it('should initiate backand namespace', () => {
-    expect(backand.initiate).to.be.an('function');
-    backand.initiate({
+    expect(backand.init).to.be.an('function');
+    backand.init({
       appName: 'sdk',
       signUpToken: '851692ae-eb94-4f18-87ee-075255e67748',
       anonymousToken: '82cfcfe8-c718-4621-8bb6-cd600e23487f',
       runSocket: true
     });
     expect(backand).to.be.an('object');
-    expect(backand).to.have.all.keys('service', 'constants', 'helpers', 'socket');
+    // expect(backand).to.have.all.keys('service', 'constants', 'helpers', 'socket');
   });
 
   describe('Backand.service', () => {
     describe('auth', () => {
       it('useAnonymousAuth', function(done) {
         this.timeout(0);
-        backand.service.useAnonymousAuth()
+        backand.useAnonymousAuth()
         .then(res => {
           expect(res.data.username).to.eql('Guest');
           done();
@@ -29,7 +29,7 @@ describe('Backand.initiate', () => {
       });
       it('signin', function(done) {
         this.timeout(0);
-        backand.service.signin('sdk@backand.com', 'Password1')
+        backand.signin('sdk@backand.com', 'Password1')
         .then(res => {
           expect(res.data.username).to.eql('sdk@backand.com');
           done();
@@ -40,7 +40,7 @@ describe('Backand.initiate', () => {
       });
       it('getUserDetails', function(done) {
         this.timeout(0);
-        backand.service.getUserDetails()
+        backand.getUserDetails()
         .then(res => {
           expect(res.data.username).to.eql('sdk@backand.com');
           done();
@@ -51,18 +51,18 @@ describe('Backand.initiate', () => {
       });
       it('changePassword 1', function() {
         this.timeout(0);
-        return backand.service.changePassword('Password1','Password2')
+        return backand.changePassword('Password1','Password2')
       });
       it('changePassword 2', function() {
         this.timeout(0);
-        return backand.service.changePassword('Password2', 'Password1');
+        return backand.changePassword('Password2', 'Password1');
       });
       it('signout', function(done) {
         this.timeout(0);
-        backand.service.signout()
+        backand.signout()
         .then(res => {
           expect(res.data).to.be.null;
-          backand.service.useAnonymousAuth();
+          backand.useAnonymousAuth();
           done();
         })
         .catch(err => {
@@ -73,11 +73,11 @@ describe('Backand.initiate', () => {
     describe('crud', () => {
       it('getList', function() {
         this.timeout(0);
-        return backand.service.getList('items');
+        return backand.getList('items');
       });
       it('create', function(done) {
         this.timeout(0);
-        backand.service.create('items',{
+        backand.create('items',{
           name:'test',
           description:'new item'
         })
@@ -91,7 +91,7 @@ describe('Backand.initiate', () => {
       });
       it('getOne 1', function(done) {
         this.timeout(0);
-        backand.service.getOne('items', lastCreatedId)
+        backand.getOne('items', lastCreatedId)
         .then(res => {
           expect(res.data.description).to.eql('new item');
           done();
@@ -102,14 +102,14 @@ describe('Backand.initiate', () => {
       });
       it('update', function() {
         this.timeout(0);
-        return backand.service.update('items',lastCreatedId, {
+        return backand.update('items',lastCreatedId, {
           name:'test',
           description:'old item'
         });
       });
       it('getOne 2', function(done) {
         this.timeout(0);
-        backand.service.getOne('items', lastCreatedId)
+        backand.getOne('items', lastCreatedId)
         .then(res => {
           expect(res.data.description).to.eql('old item');
           done();
@@ -120,7 +120,7 @@ describe('Backand.initiate', () => {
       });
       it('remove', function() {
         this.timeout(0);
-        return backand.service.remove('items', lastCreatedId);
+        return backand.remove('items', lastCreatedId);
       });
     });
     describe('files', () => {
@@ -130,7 +130,7 @@ describe('Backand.initiate', () => {
         var reader  = new FileReader();
         reader.readAsDataURL(file);
         reader.addEventListener("load", function () {
-          backand.service.uploadFile('items', 'files', file.name, reader.result)
+          backand.uploadFile('items', 'files', file.name, reader.result)
           .then(res => {
             done();
           })
@@ -141,7 +141,7 @@ describe('Backand.initiate', () => {
       });
       it('deleteFile', function() {
         this.timeout(0);
-        return backand.service.deleteFile('items','files', 'file2upload');
+        return backand.deleteFile('items','files', 'file2upload');
       });
     });
   });
@@ -157,14 +157,14 @@ describe('Backand.initiate', () => {
   });
   describe('Backand.socket', () => {
     it('should have on function', () => {
-      expect(backand.socket.on).to.be.an('function');
+      expect(backand.on).to.be.an('function');
     });
     it('should listen to events from server', function(done) {
       this.timeout(5000);
       setTimeout(function () {
-        backand.service.trigger('items', 'socket_test');
+        backand.trigger('items', 'socket_test');
       }, 1000);
-      backand.socket.on('socket_test', data => {
+      backand.on('socket_test', data => {
         expect(data).to.eql('test');
         done();
       });

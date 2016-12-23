@@ -28,14 +28,13 @@
 
 
   // init backand
-  backand.initiate({
+  backand.init && backand.init({
     appName: 'sdk',
     signUpToken: '851692ae-eb94-4f18-87ee-075255e67748',
     anonymousToken: '82cfcfe8-c718-4621-8bb6-cd600e23487f',
     runSocket: true,
     // storage: new MemoryStorage()
   });
-  var app = backand.service;
 
   var outputContainer = document.getElementById('outputContainer');
   var outputElement = document.getElementById('outputElement');
@@ -61,11 +60,11 @@
   document.getElementById('sigin_btn').addEventListener('click', function() {
       var username = document.getElementById('sigin_user').value;
       var password = document.getElementById('sigin_pass').value;
-      app.signin(username, password, successCallback, errorCallback);
+      backand.signin(username, password, successCallback, errorCallback);
     }, false);
 
   document.getElementById('anonymous_btn').addEventListener('click', function() {
-      app.useAnonymousAuth(successCallback);
+      backand.useAnonymousAuth(successCallback);
     }, false);
 
   var socialProviders = backand.constants.SOCIAL_PROVIDERS
@@ -79,7 +78,7 @@
     btn.style.borderColor = socialProviders[provider].css.backgroundColor;
 
     btn.onclick = function(e) {
-      app.socialSignin(e.target .value, successCallback, errorCallback)
+      backand.socialSignin(e.target .value, successCallback, errorCallback)
     };
 
     document.getElementById('social_btns').appendChild(btn);
@@ -91,7 +90,7 @@
   document.getElementById('deleteitem_btn').disabled = true;
 
   document.getElementById('postitem_btn').addEventListener('click', function() {
-    app.create(objectName, {
+    backand.create(objectName, {
       name:'test',
       description:'new item'
     }, {returnObject: true}, function (response) {
@@ -104,23 +103,23 @@
   }, false);
 
   document.getElementById('getitems_btn').addEventListener('click', function() {
-    app.getList(objectName, {}, successCallback, errorCallback);
+    backand.getList(objectName, {}, successCallback, errorCallback);
   }, false);
 
   document.getElementById('getitem_btn').addEventListener('click', function() {
-    app.getOne(objectName, lastCreatedId, {}, successCallback, errorCallback);
+    backand.getOne(objectName, lastCreatedId, {}, successCallback, errorCallback);
   }, false);
 
 
   document.getElementById('updateitem_btn').addEventListener('click', function() {
-    app.update(objectName, lastCreatedId, {
+    backand.update(objectName, lastCreatedId, {
       name:'test',
       description:'old item'
     }, {returnObject: true}, successCallback, errorCallback);
   }, false);
 
   document.getElementById('deleteitem_btn').addEventListener('click', function() {
-    app.remove(objectName, lastCreatedId, successCallback, errorCallback);
+    backand.remove(objectName, lastCreatedId, successCallback, errorCallback);
   }, false);
 
   // FILES
@@ -135,7 +134,7 @@
     reader.addEventListener("load", function () {
       // console.log(file);
       // console.log(reader);
-      app.uploadFile('items', 'files', file.name, reader.result, function (response) {
+      backand.uploadFile('items', 'files', file.name, reader.result, function (response) {
         preview.src = response.data.url;
         lastUploaded = file.name;
         document.getElementById('delfile_btn').disabled = false;
@@ -149,7 +148,7 @@
   }, false);
 
   document.getElementById('delfile_btn').addEventListener('click', function() {
-    app.deleteFile('items','files', lastUploaded, function (response) {
+    backand.deleteFile('items','files', lastUploaded, function (response) {
       preview.src = ""
       lastUploaded = null;
       document.getElementById('delfile_btn').disabled = true;
@@ -158,7 +157,7 @@
   }, false);
 
   // SOCKET
-  backand.socket.on('items_updated', function (data) {
+  backand.on('items_updated', function (data) {
     console.log('items_updated');
     console.log(data);
   });
