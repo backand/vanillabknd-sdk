@@ -1,6 +1,6 @@
 {
   "name": "vanillabknd-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Backand SDK for JavaScript",
   "keywords": "Backand backend javascript vanilla sdk",
   "main": "./dist/backand.js",
