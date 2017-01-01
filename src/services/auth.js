@@ -3,7 +3,7 @@ import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
 import defaults from './../defaults'
 
 export default {
-  __handleRefreshToken__,
+  // __handleRefreshToken__,
   useAnonymousAuth,
   signin,
   signup,
