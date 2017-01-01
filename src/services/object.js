@@ -1,4 +1,16 @@
-import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
+import { URLS } from './../constants'
+
+export default {
+  getList,
+  create,
+  getOne,
+  update,
+  remove,
+  action: {
+    get,
+    post,
+  },
+}
 
 function __allowedParams__ (allowedParams, params) {
   let newParams = {};
@@ -9,50 +21,65 @@ function __allowedParams__ (allowedParams, params) {
   }
   return newParams;
 }
-export function getList (object, params = {}, scb, ecb) {
+function getList (object, params = {}, scb, ecb) {
   const allowedParams = ['pageSize','pageNumber','filter','sort','search','exclude','deep','relatedObjects'];
-  return this.http({
+  return backand.utils.http({
     url: `${URLS.objects}/${object}`,
     method: 'GET',
     params: __allowedParams__(allowedParams, params),
-  }, scb, ecb)
+  }, null, ecb)
+    .then(response => {
+      let totalRows = response.data['totalRows'];
+      response.data = response.data['data'];
+      scb && scb(response, totalRows);
+      return response;
+    });
 }
-export function create (object, data, params = {}, scb, ecb) {
+function create (object, data, params = {}, scb, ecb) {
   const allowedParams = ['returnObject','deep'];
-  return this.http({
+  return backand.utils.http({
     url: `${URLS.objects}/${object}`,
     method: 'POST',
     data,
     params: __allowedParams__(allowedParams, params),
   }, scb, ecb)
 }
-export function getOne (object, id, params = {}, scb, ecb) {
+function getOne (object, id, params = {}, scb, ecb) {
   const allowedParams = ['deep','exclude','level'];
-  return this.http({
+  return backand.utils.http({
     url: `${URLS.objects}/${object}/${id}`,
     method: 'GET',
     params: __allowedParams__(allowedParams, params),
   }, scb, ecb)
 }
-export function update (object, id, data, params = {}, scb, ecb) {
+function update (object, id, data, params = {}, scb, ecb) {
   const allowedParams = ['returnObject','deep'];
-  return this.http({
+  return backand.utils.http({
     url: `${URLS.objects}/${object}/${id}`,
     method: 'PUT',
     data,
     params: __allowedParams__(allowedParams, params),
   }, scb, ecb)
 }
-export function remove (object, id, scb, ecb) {
-  return this.http({
+function remove (object, id, scb, ecb) {
+  return backand.utils.http({
     url: `${URLS.objects}/${object}/${id}`,
     method: 'DELETE',
   }, scb, ecb)
 }
-export function trigger (object, fileAction, data = {}, scb, ecb) {
-  return this.http({
-    url: `${URLS.objectsAction}/${object}?name=${fileAction}`,
+
+function get (object, action, params = {}, scb, ecb) {
+  return backand.utils.http({
+    url: `${URLS.objectsAction}/${object}?name=${action}`,
+    method: 'GET',
+    params,
+  }, scb, ecb)
+}
+function post (object, action, data, params = {}, scb, ecb) {
+  return backand.utils.http({
+    url: `${URLS.objectsAction}/${object}?name=${action}`,
     method: 'POST',
     data,
+    params,
   }, scb, ecb)
 }

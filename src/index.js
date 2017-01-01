@@ -10,9 +10,11 @@ import * as helpers from './helpers'
 import Storage from './utils/storage'
 import Http from './utils/http'
 import Socket from './utils/socket'
-import * as auth from './services/auth'
-import * as crud from './services/crud'
-import * as files from './services/files'
+import auth from './services/auth'
+import object from './services/object'
+import file from './services/file'
+import query from './services/query'
+import user from './services/user'
 
 let backand = {
   constants,
@@ -32,33 +34,23 @@ backand.init = (config = {}) => {
   if (!defaults.signUpToken)
     throw new Error('signUpToken is missing');
 
-  // init globals
-  let storage = new Storage(defaults.storage, defaults.storagePrefix);
-  let http = Http.create({
-    baseURL: defaults.apiUrl
-  });
-  let scope = {
-    storage,
-    http,
+  // init utils
+  let utils = {
+    storage: new Storage(defaults.storage, defaults.storagePrefix),
+    http: Http.create({
+      baseURL: defaults.apiUrl
+    }),
     isIE: window.document && (false || !!document.documentMode),
+    ENV: 'browser',
   }
-  let socket = null;
   if (defaults.runSocket) {
-    socket = new Socket(defaults.socketUrl);
-    scope.socket = socket;
+    utils['socket'] = new Socket(defaults.socketUrl);
   }
 
-  // bind globals to all service functions
-  let service = Object.assign({}, auth, crud, files);
-  for (let fn in service) {
-    service[fn] = service[fn].bind(scope);
-  }
-
-  // set interceptor for authHeaders & refreshToken
-  http.config.interceptors = {
+  utils.http.config.interceptors = {
     request: function(config) {
-      if (config.url.indexOf(constants.URLS.token) ===  -1 && storage.get('user')) {
-        config.headers = Object.assign({}, config.headers, storage.get('user').token)
+      if (config.url.indexOf(constants.URLS.token) ===  -1 && backand.utils.storage.get('user')) {
+        config.headers = Object.assign({}, config.headers, backand.utils.storage.get('user').token)
       }
     },
     responseError: function (error, config, resolve, reject, scb, ecb) {
@@ -66,20 +58,42 @@ backand.init = (config = {}) => {
        && defaults.manageRefreshToken
        && error.status === 401
        && error.data && error.data.Message === 'invalid or expired token') {
-         auth.__handleRefreshToken__.call(scope, error)
-         .then(response => {
-           this.request(config, scb, ecb);
-         })
-         .catch(error => {
-           ecb && ecb(error);
-           reject(error);
-         })
+         auth.__handleRefreshToken__.call(utils, error)
+           .then(response => {
+             backand.utils.http.request(config, scb, ecb);
+           })
+           .catch(error => {
+             ecb && ecb(error);
+             reject(error);
+           })
       }
       else {
         ecb && ecb(error);
         reject(error);
       }
     }
+  }
+
+  // expose backand namespace to window
+  delete backand.init;
+  Object.assign(
+    backand,
+    auth,
+    {
+      object,
+      file,
+      query,
+      user,
+      utils,
+    }
+  );
+  if(defaults.runSocket) {
+    backand.utils.storage.get('user') && backand.utils.socket.connect(
+      backand.utils.storage.get('user').token.Authorization || null,
+      defaults.anonymousToken,
+      defaults.appName
+    );
+    Object.assign(backand, {on: backand.utils.socket.on.bind(backand.utils.socket)});
   }
 
   // get data from url in social sign-in popup
@@ -96,14 +110,6 @@ backand.init = (config = {}) => {
       //   window.opener.postMessage(JSON.stringify(data), location.origin);
       // }
     }
-  }
-
-  // expose backand namespace to window
-  delete backand.init;
-  Object.assign(backand, service);
-  if(defaults.runSocket) {
-    storage.get('user') && socket.connect(storage.get('user').token.Authorization || null, defaults.anonymousToken, defaults.appName)
-    Object.assign(backand, {on: socket.on.bind(socket)});
   }
 
 }

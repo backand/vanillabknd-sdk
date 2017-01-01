@@ -153,4 +153,3 @@ http.create = (config) => {
 };
 
 export default http;
-window.http = window.http || http;

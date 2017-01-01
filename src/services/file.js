@@ -1,7 +1,12 @@
-import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
+import { URLS } from './../constants'
 
-export function uploadFile (object, fileAction, filename, filedata, scb, ecb) {
-  return this.http({
+export default {
+  upload,
+  remove,
+}
+
+function upload (object, fileAction, filename, filedata, scb, ecb) {
+  return backand.utils.http({
     url: `${URLS.objectsAction}/${object}?name=${fileAction}`,
     method: 'POST',
     data: {
@@ -10,8 +15,8 @@ export function uploadFile (object, fileAction, filename, filedata, scb, ecb) {
       }
   }, scb, ecb)
 }
-export function deleteFile (object, fileAction, filename, scb, ecb) {
-  return this.http({
+function remove (object, fileAction, filename, scb, ecb) {
+  return backand.utils.http({
     url: `${URLS.objectsAction}/${object}?name=${fileAction}`,
     method: 'DELETE',
     data: {

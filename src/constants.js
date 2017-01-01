@@ -10,12 +10,14 @@ export const URLS = {
   requestResetPassword: '1/user/requestResetPassword',
   resetPassword: '1/user/resetPassword',
   changePassword: '1/user/changePassword',
+  // socialLoginWithCode: '1/user/PROVIDER/code',
+  socialSigninWithToken: '1/user/PROVIDER/token',
+  // socialSingupWithCode: '1/user/PROVIDER/signupCode',
+  signout: '1/user/signout',
+  profile: 'api/account/profile',
   objects: '1/objects',
   objectsAction: '1/objects/action',
-  // socialLoginWithCode: '1/user/PROVIDER/code',
-  // socialSingupWithCode: '1/user/PROVIDER/signupCode',
-  socialSigninWithToken: '1/user/PROVIDER/token',
-  profile: '/api/account/profile',
+  query: '1/query/data',
 };
 
 export const SOCIAL_PROVIDERS = {

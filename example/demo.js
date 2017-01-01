@@ -26,7 +26,6 @@
     return this.data = {};
   }
 
-
   // init backand
   backand.init && backand.init({
     appName: 'sdk',
@@ -90,7 +89,7 @@
   document.getElementById('deleteitem_btn').disabled = true;
 
   document.getElementById('postitem_btn').addEventListener('click', function() {
-    backand.create(objectName, {
+    backand.object.create(objectName, {
       name:'test',
       description:'new item'
     }, {returnObject: true}, function (response) {
@@ -103,23 +102,23 @@
   }, false);
 
   document.getElementById('getitems_btn').addEventListener('click', function() {
-    backand.getList(objectName, {}, successCallback, errorCallback);
+    backand.object.getList(objectName, {}, successCallback, errorCallback);
   }, false);
 
   document.getElementById('getitem_btn').addEventListener('click', function() {
-    backand.getOne(objectName, lastCreatedId, {}, successCallback, errorCallback);
+    backand.object.getOne(objectName, lastCreatedId, {}, successCallback, errorCallback);
   }, false);
 
 
   document.getElementById('updateitem_btn').addEventListener('click', function() {
-    backand.update(objectName, lastCreatedId, {
+    backand.object.update(objectName, lastCreatedId, {
       name:'test',
       description:'old item'
     }, {returnObject: true}, successCallback, errorCallback);
   }, false);
 
   document.getElementById('deleteitem_btn').addEventListener('click', function() {
-    backand.remove(objectName, lastCreatedId, successCallback, errorCallback);
+    backand.object.remove(objectName, lastCreatedId, successCallback, errorCallback);
   }, false);
 
   // FILES
@@ -134,7 +133,7 @@
     reader.addEventListener("load", function () {
       // console.log(file);
       // console.log(reader);
-      backand.uploadFile('items', 'files', file.name, reader.result, function (response) {
+      backand.file.upload('items', 'files', file.name, reader.result, function (response) {
         preview.src = response.data.url;
         lastUploaded = file.name;
         document.getElementById('delfile_btn').disabled = false;
@@ -148,7 +147,7 @@
   }, false);
 
   document.getElementById('delfile_btn').addEventListener('click', function() {
-    backand.deleteFile('items','files', lastUploaded, function (response) {
+    backand.file.remove('items','files', lastUploaded, function (response) {
       preview.src = ""
       lastUploaded = null;
       document.getElementById('delfile_btn').disabled = true;

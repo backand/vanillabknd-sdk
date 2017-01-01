@@ -1,5 +1,5 @@
 # Dependency directory
 node_modules/**
 
-# temp
-temp/**
+# scribble
+__scribble__/**
