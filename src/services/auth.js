@@ -182,12 +182,17 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
 
     let handler = function(e) {
       let url = e.type === 'message' ? e.origin : e.url;
-      if (url.indexOf(window.location.href) === -1) {
+      // ie-location-origin-polyfill
+      if (!window.location.origin) {
+        window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+      }
+      if (url.indexOf(window.location.origin) === -1) {
         reject(__generateFakeResponse__(0, '', [], 'Unknown Origin Message'));
       }
 
       let res = e.type === 'message' ? JSON.parse(e.data) : JSON.parse(e.newValue);
-      window.removeEventListener(e.type, handler, false);
+      window.removeEventListener('message', handler, false);
+      window.removeEventListener('storage', handler, false);
       if (popup && popup.close) { popup.close() }
       e.type === 'storage' && localStorage.removeItem(e.key);
 
@@ -197,12 +202,11 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
       else {
         resolve(res);
       }
-
     }
     handler = handler.bind(popup);
 
+    window.addEventListener('message', handler, false);
     window.addEventListener('storage', handler , false);
-    // window.addEventListener('message', handler, false);
   });
 }
 function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=500, height=560') {

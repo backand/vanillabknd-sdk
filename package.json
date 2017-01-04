@@ -1,6 +1,6 @@
 {
   "name": "vanillabknd-sdk",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Backand SDK for JavaScript",
   "main": "./dist/backand.js",
   "files": [
@@ -41,5 +41,14 @@
     "type": "git",
     "url": "git+https://github.com/backand/vanillabknd-sdk.git"
   },
-  "homepage": "https://github.com/backand/vanillabknd-sdk#readme"
+  "homepage": "https://github.com/backand/vanillabknd-sdk#readme",
+  "keywords": [
+    "Backand",
+    "backend",
+    "backend sdk",
+    "backend js",
+    "backend javascript",
+    "vanillabknd-sdk",
+    "backend vanilla sdk"
+  ]
 }

@@ -16,6 +16,23 @@ import file from './services/file'
 import query from './services/query'
 import user from './services/user'
 
+// get data from url in social sign-in popup
+// let dataMatch = /\?(data|error)=(.+)/.exec(window.location.href);
+let dataMatch = /(data|error)=(.+)/.exec(window.location.href);
+if (dataMatch && dataMatch[1] && dataMatch[2]) {
+  let data = {
+    data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
+  }
+  data.status = (dataMatch[1] === 'data') ? 200 : 0;
+  var isIE = false || !!document.documentMode;
+  if (!isIE) {
+    window.opener.postMessage(JSON.stringify(data), location.origin);
+  }
+  else {
+    localStorage.setItem('SOCIAL_DATA', JSON.stringify(data));
+  }
+}
+
 let backand = {
   constants,
   helpers,
@@ -94,22 +111,6 @@ backand.init = (config = {}) => {
       defaults.appName
     );
     Object.assign(backand, {on: backand.utils.socket.on.bind(backand.utils.socket)});
-  }
-
-  // get data from url in social sign-in popup
-  if (!defaults.isMobile) {
-    let dataMatch = /\?(data|error)=(.+)/.exec(window.location.href);
-    if (dataMatch && dataMatch[1] && dataMatch[2]) {
-      let data = {
-        data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
-      }
-      data.status = (dataMatch[1] === 'data') ? 200 : 0;
-      localStorage.setItem('SOCIAL_DATA', JSON.stringify(data));
-      // var isIE = false || !!document.documentMode;
-      // if (!isIE) {
-      //   window.opener.postMessage(JSON.stringify(data), location.origin);
-      // }
-    }
   }
 
 }
