@@ -102,6 +102,7 @@ backand.init = (config = {}) => {
       query,
       user,
       utils,
+      defaults,
     }
   );
   if(defaults.runSocket) {
