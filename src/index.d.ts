@@ -31,9 +31,9 @@ declare namespace backand {
   function socialSignup (provider: string, email: string, scb?: (response?: Response)=> void, ecb?: (error?: Response)=> void): Promise<Response>;
   function requestResetPassword(username: string, scb?: (response?: Response)=> void, ecb?: (error?: Response)=> void): Promise<Response>;
   function resetPassword (newPassword: string, resetToken: string, scb?: (response?: Response)=> void, ecb?: (error?: Response)=> void): Promise<Response>;
-  function changePassword(): Promise<Response>;
+  function changePassword(oldPassword: string, newPassword: string, scb?: (response?: Response)=> void, ecb?: (error?: Response)=> void): Promise<Response>;
   function signout (scb?: (response?: Response)=> void): Promise<Response>;
   function getSocialProviders(scb?: (response?: Response)=> void): Promise<Response>;
   // socket
-  function on(eventName: string, callback: (response?: Response)=> void): void;
+  function on(eventName: string, callback?: (response?: any) => void): void;
 }
