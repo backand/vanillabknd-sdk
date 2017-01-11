@@ -1,4 +1,5 @@
 import { URLS } from './../constants'
+import utils from './../utils/utils'
 
 export default {
   getList,
@@ -23,7 +24,7 @@ function __allowedParams__ (allowedParams, params) {
 }
 function getList (object, params = {}, scb, ecb) {
   const allowedParams = ['pageSize','pageNumber','filter','sort','search','exclude','deep','relatedObjects'];
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objects}/${object}`,
     method: 'GET',
     params: __allowedParams__(allowedParams, params),
@@ -37,7 +38,7 @@ function getList (object, params = {}, scb, ecb) {
 }
 function create (object, data, params = {}, scb, ecb) {
   const allowedParams = ['returnObject','deep'];
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objects}/${object}`,
     method: 'POST',
     data,
@@ -46,7 +47,7 @@ function create (object, data, params = {}, scb, ecb) {
 }
 function getOne (object, id, params = {}, scb, ecb) {
   const allowedParams = ['deep','exclude','level'];
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objects}/${object}/${id}`,
     method: 'GET',
     params: __allowedParams__(allowedParams, params),
@@ -54,7 +55,7 @@ function getOne (object, id, params = {}, scb, ecb) {
 }
 function update (object, id, data, params = {}, scb, ecb) {
   const allowedParams = ['returnObject','deep'];
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objects}/${object}/${id}`,
     method: 'PUT',
     data,
@@ -62,21 +63,21 @@ function update (object, id, data, params = {}, scb, ecb) {
   }, scb, ecb)
 }
 function remove (object, id, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objects}/${object}/${id}`,
     method: 'DELETE',
   }, scb, ecb)
 }
 
 function get (object, action, params = {}, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objectsAction}/${object}?name=${action}`,
     method: 'GET',
     params,
   }, scb, ecb)
 }
 function post (object, action, data, params = {}, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objectsAction}/${object}?name=${action}`,
     method: 'POST',
     data,

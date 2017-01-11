@@ -1,12 +1,13 @@
 class Injector {
-  constructor (url) {
+  constructor () {
     this.dependencies = {};
+    this.cached = [];
   }
   register (key, value) {
     this.dependencies[key] = value;
   }
   resolve (deps, func, scope = {}) {
-    var args = [], d;
+    var d;
     for(var i=0; i<deps.length, d=deps[i]; i++) {
       if(this.dependencies[d]) {
         scope[d] = this.dependencies[d];

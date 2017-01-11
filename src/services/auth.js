@@ -1,6 +1,7 @@
 import { Promise } from 'es6-promise'
 import { URLS, EVENTS, SOCIAL_PROVIDERS } from './../constants'
 import defaults from './../defaults'
+import utils from './../utils/utils'
 
 export default {
   __handleRefreshToken__,
@@ -42,9 +43,9 @@ function __dispatchEvent__ (name) {
     window.fireEvent('on' + event.eventType, event);
   }
 }
-function __handleRefreshToken__ (error) {
+function __handleRefreshToken__ () {
   return new Promise((resolve, reject) => {
-    let user = backand.utils.storage.get('user');
+    let user = utils.storage.get('user');
     if (!user || !user.details.refresh_token) {
       reject(__generateFakeResponse__(0, '', [], 'No cached user or refreshToken found. authentication is required.'));
     }
@@ -77,7 +78,7 @@ function useAnonymousAuth (scb) {
       "regId": 0 ,
       "userId": null
     }
-    backand.utils.storage.set('user', {
+    utils.storage.set('user', {
       token: {
         AnonymousToken: defaults.anonymousToken
       },
@@ -85,7 +86,7 @@ function useAnonymousAuth (scb) {
     });
     __dispatchEvent__(EVENTS.SIGNIN);
     if (defaults.runSocket) {
-      backand.utils.socket.connect(null, defaults.anonymousToken, defaults.appName);
+      utils.socket.connect(null, defaults.anonymousToken, defaults.appName);
     }
     scb && scb(__generateFakeResponse__(200, 'OK', [], details));
     resolve(__generateFakeResponse__(200, 'OK', [], details));
@@ -93,7 +94,7 @@ function useAnonymousAuth (scb) {
 }
 function signin (username, password, scb, ecb) {
   return new Promise((resolve, reject) => {
-    backand.utils.http({
+    utils.http({
       url: URLS.token,
       method: 'POST',
       headers: {
@@ -102,7 +103,7 @@ function signin (username, password, scb, ecb) {
       data: `username=${username}&password=${password}&appName=${defaults.appName}&grant_type=password`
     })
     .then(response => {
-      backand.utils.storage.set('user', {
+      utils.storage.set('user', {
         token: {
           Authorization: `Bearer ${response.data.access_token}`
         },
@@ -110,7 +111,7 @@ function signin (username, password, scb, ecb) {
       });
       __dispatchEvent__(EVENTS.SIGNIN);
       if (defaults.runSocket) {
-        backand.utils.socket.connect(backand.utils.storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName);
+        utils.socket.connect(utils.storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName);
       }
       scb && scb(response);
       resolve(response);
@@ -123,7 +124,7 @@ function signin (username, password, scb, ecb) {
 }
 function signup (email, password, confirmPassword, firstName, lastName, parameters = {}, scb, ecb) {
   return new Promise((resolve, reject) => {
-    backand.utils.http({
+    utils.http({
       url: URLS.signup,
       method: 'POST',
       headers: {
@@ -171,7 +172,7 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
     }
     let url =  `${defaults.apiUrl}/1/${__getSocialUrl__(provider, isSignUp, true)}&appname=${defaults.appName}${email ? '&email='+email : ''}&returnAddress=` // ${location.href}
     let popup = null;
-    if (!backand.utils.isIE) {
+    if (!utils.isIE) {
       popup = window.open(url, 'socialpopup', spec);
     }
     else {
@@ -230,7 +231,7 @@ function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=500, hei
 };
 function socialSigninWithToken (provider, token, scb, ecb) {
   return new Promise((resolve, reject) => {
-    backand.utils.http({
+    utils.http({
       url: URLS.socialSigninWithToken.replace('PROVIDER', provider),
       method: 'GET',
       params: {
@@ -240,7 +241,7 @@ function socialSigninWithToken (provider, token, scb, ecb) {
       },
     })
     .then(response => {
-      backand.utils.storage.set('user', {
+      utils.storage.set('user', {
         token: {
           Authorization: `Bearer ${response.data.access_token}`
         },
@@ -248,10 +249,10 @@ function socialSigninWithToken (provider, token, scb, ecb) {
       });
       __dispatchEvent__(EVENTS.SIGNIN);
       if (defaults.runSocket) {
-        backand.utils.socket.connect(backand.utils.storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName);
+        utils.socket.connect(utils.storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName);
       }
       // TODO:PATCH
-      backand.utils.http({
+      utils.http({
         url: `${URLS.objects}/users`,
         method: 'GET',
         params: {
@@ -266,13 +267,13 @@ function socialSigninWithToken (provider, token, scb, ecb) {
       })
       .then(patch => {
         let {id, firstName, lastName} = patch.data.data[0];
-        let user = backand.utils.storage.get('user');
+        let user = utils.storage.get('user');
         let newDetails =  {userId: id.toString(), firstName, lastName};
-        backand.utils.storage.set('user', {
+        utils.storage.set('user', {
           token: user.token,
           details: Object.assign({}, user.details, newDetails)
         });
-        user = backand.utils.storage.get('user');
+        user = utils.storage.get('user');
         let res = __generateFakeResponse__(response.status, response.statusText, response.headers, user.details);
         scb && scb(res);
         resolve(res);
@@ -323,7 +324,7 @@ function __signinWithToken__ (tokenData) {
     }
     data = data.join("&");
 
-    backand.utils.http({
+    utils.http({
       url: URLS.token,
       method: 'POST',
       headers: {
@@ -332,7 +333,7 @@ function __signinWithToken__ (tokenData) {
       data: `${data}&appName=${defaults.appName}&grant_type=password`
     })
     .then(response => {
-      backand.utils.storage.set('user', {
+      utils.storage.set('user', {
         token: {
           Authorization: `Bearer ${response.data.access_token}`
         },
@@ -340,7 +341,7 @@ function __signinWithToken__ (tokenData) {
       });
       __dispatchEvent__(EVENTS.SIGNIN);
       if (defaults.runSocket) {
-        backand.utils.socket.connect(backand.utils.storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName);
+        utils.socket.connect(utils.storage.get('user').token.Authorization, defaults.anonymousToken, defaults.appName);
       }
       resolve(response);
     })
@@ -351,7 +352,7 @@ function __signinWithToken__ (tokenData) {
   });
 }
 function requestResetPassword (username, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: URLS.requestResetPassword,
     method: 'POST',
     data: {
@@ -361,7 +362,7 @@ function requestResetPassword (username, scb, ecb) {
   }, scb, ecb)
 }
 function resetPassword (newPassword, resetToken, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: URLS.resetPassword,
     method: 'POST',
     data: {
@@ -371,7 +372,7 @@ function resetPassword (newPassword, resetToken, scb, ecb) {
   }, scb, ecb)
 }
 function changePassword (oldPassword, newPassword, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: URLS.changePassword,
     method: 'POST',
     data: {
@@ -382,17 +383,17 @@ function changePassword (oldPassword, newPassword, scb, ecb) {
 }
 function signout (scb) {
   return new Promise((resolve, reject) => {
-    backand.utils.http({
+    utils.http({
       url: URLS.signout,
       method: 'GET',
     })
-    backand.utils.storage.remove('user');
+    utils.storage.remove('user');
     if (defaults.runSocket) {
-      backand.utils.socket.disconnect();
+      utils.socket.disconnect();
     }
     __dispatchEvent__(EVENTS.SIGNOUT);
-    scb && scb(__generateFakeResponse__(200, 'OK', [], backand.utils.storage.get('user')));
-    resolve(__generateFakeResponse__(200, 'OK', [], backand.utils.storage.get('user')));
+    scb && scb(__generateFakeResponse__(200, 'OK', [], utils.storage.get('user')));
+    resolve(__generateFakeResponse__(200, 'OK', [], utils.storage.get('user')));
   });
 }
 function getSocialProviders (scb) {

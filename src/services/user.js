@@ -1,5 +1,6 @@
 import { Promise } from 'es6-promise'
 import { URLS } from './../constants'
+import utils from './../utils/utils'
 
 export default {
   getUserDetails,
@@ -19,7 +20,7 @@ function __generateFakeResponse__ (status = 0, statusText = '', headers = [], da
 }
 function __getUserDetailsFromStorage__ (scb, ecb) {
   return new Promise((resolve, reject) => {
-    let user = backand.utils.storage.get('user');
+    let user = utils.storage.get('user');
     if (!user) {
       ecb && ecb(__generateFakeResponse__(0, '', [], 'No cached user found. authentication is required.'));
       reject(__generateFakeResponse__(0, '', [], 'No cached user found. authentication is required.'));
@@ -35,14 +36,14 @@ function getUserDetails (scb, ecb, force = false) {
     return __getUserDetailsFromStorage__(scb, ecb);
   }
   else {
-    return backand.utils.http({
+    return utils.http({
       url: URLS.profile,
       method: 'GET',
     })
     .then(response => {
-      let user = backand.utils.storage.get('user');
+      let user = utils.storage.get('user');
       let newDetails = response.data;
-      backand.utils.storage.set('user', {
+      utils.storage.set('user', {
         token: user.token,
         details: Object.assign({}, user.details, newDetails)
       });

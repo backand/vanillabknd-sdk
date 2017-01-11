@@ -1,4 +1,5 @@
 import { URLS } from './../constants'
+import utils from './../utils/utils'
 
 export default {
   get,
@@ -6,14 +7,14 @@ export default {
 }
 
 function get (name, params = {}, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.query}/${name}`,
     method: 'GET',
     params,
   }, scb, ecb)
 }
 function post (name, data, params = {}, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.query}/${name}`,
     method: 'POST',
     data,

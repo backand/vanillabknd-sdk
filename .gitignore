@@ -3,3 +3,6 @@ node_modules/**
 
 # scribble
 __scribble__/**
+
+# npm build
+vanillabknd-sdk-1.1.0.tgz

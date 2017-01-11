@@ -7,9 +7,12 @@
 import defaults from './defaults'
 import * as constants from './constants'
 import * as helpers from './helpers'
+
+import utils from './utils/utils'
 import Storage from './utils/storage'
 import Http from './utils/http'
 import Socket from './utils/socket'
+
 import auth from './services/auth'
 import object from './services/object'
 import file from './services/file'
@@ -52,22 +55,24 @@ backand.init = (config = {}) => {
     throw new Error('signUpToken is missing');
 
   // init utils
-  let utils = {
+  Object.assign(utils, {
     storage: new Storage(defaults.storage, defaults.storagePrefix),
     http: Http.create({
       baseURL: defaults.apiUrl
     }),
     isIE: window.document && (false || !!document.documentMode),
     ENV: 'browser',
-  }
+  });
   if (defaults.runSocket) {
-    utils['socket'] = new Socket(defaults.socketUrl);
+    Object.assign(utils, {
+      socket: new Socket(defaults.socketUrl)
+    });
   }
 
   utils.http.config.interceptors = {
     request: function(config) {
-      if (config.url.indexOf(constants.URLS.token) ===  -1 && backand.utils.storage.get('user')) {
-        config.headers = Object.assign({}, config.headers, backand.utils.storage.get('user').token)
+      if (config.url.indexOf(constants.URLS.token) ===  -1 && utils.storage.get('user')) {
+        config.headers = Object.assign({}, config.headers, utils.storage.get('user').token)
       }
     },
     responseError: function (error, config, resolve, reject, scb, ecb) {
@@ -75,9 +80,9 @@ backand.init = (config = {}) => {
        && defaults.manageRefreshToken
        && error.status === 401
        && error.data && error.data.Message === 'invalid or expired token') {
-         auth.__handleRefreshToken__.call(utils, error)
+         auth.__handleRefreshToken__()
            .then(response => {
-             backand.utils.http.request(config, scb, ecb);
+             utils.http.request(config, scb, ecb);
            })
            .catch(error => {
              ecb && ecb(error);
@@ -97,21 +102,20 @@ backand.init = (config = {}) => {
     backand,
     auth,
     {
+      defaults,
       object,
       file,
       query,
       user,
-      utils,
-      defaults,
     }
   );
   if(defaults.runSocket) {
-    backand.utils.storage.get('user') && backand.utils.socket.connect(
-      backand.utils.storage.get('user').token.Authorization || null,
+    utils.storage.get('user') && utils.socket.connect(
+      utils.storage.get('user').token.Authorization || null,
       defaults.anonymousToken,
       defaults.appName
     );
-    Object.assign(backand, {on: backand.utils.socket.on.bind(backand.utils.socket)});
+    Object.assign(backand, {on: utils.socket.on.bind(utils.socket)});
   }
 
 }

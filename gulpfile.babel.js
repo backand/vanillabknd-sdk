@@ -19,7 +19,13 @@ gulp.task('clean', function () {
     .pipe(clean({force: true}));
 });
 
-gulp.task('build', ['clean'], ()=> {
+gulp.task('ts', ['clean'], ()=> {
+  return gulp.src('./src/index.d.ts')
+    .pipe(rename('backand.d.ts'))
+    .pipe(gulp.dest(paths.dest.js))
+});
+
+gulp.task('build', ['ts'], ()=> {
   return browserify({ entries: paths.src.js, standalone: 'backand', debug: true })
   	.transform("babelify")
     .bundle()
@@ -35,7 +41,7 @@ gulp.task('build', ['clean'], ()=> {
 });
 
 gulp.task('watch', ()=> {
-  gulp.watch('./src/**/*.js', ['build']);
+  gulp.watch('./src/**/*', ['build']);
 });
 
 gulp.task('default', ['build']);

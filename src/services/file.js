@@ -1,4 +1,5 @@
 import { URLS } from './../constants'
+import utils from './../utils/utils'
 
 export default {
   upload,
@@ -6,7 +7,7 @@ export default {
 }
 
 function upload (object, fileAction, filename, filedata, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objectsAction}/${object}?name=${fileAction}`,
     method: 'POST',
     data: {
@@ -16,7 +17,7 @@ function upload (object, fileAction, filename, filedata, scb, ecb) {
   }, scb, ecb)
 }
 function remove (object, fileAction, filename, scb, ecb) {
-  return backand.utils.http({
+  return utils.http({
     url: `${URLS.objectsAction}/${object}?name=${fileAction}`,
     method: 'DELETE',
     data: {
