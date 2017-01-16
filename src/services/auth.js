@@ -182,8 +182,7 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
         let dummyReturnAddress = 'http://www.backandblabla.bla';
         url += dummyReturnAddress;
         let handler = function(e) {
-          console.log(e);
-          if (e.url.indexOf(dummyReturnAddress) !== -1) {
+          if (e.url.startsWith(dummyReturnAddress) !== -1) {
             let dataMatch = /(data|error)=(.+)/.exec(e.url);
             let res = {};
             if (dataMatch && dataMatch[1] && dataMatch[2]) {
