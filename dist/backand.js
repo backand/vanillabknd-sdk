@@ -1865,13 +1865,13 @@ function __socialAuth__(provider, isSignUp, spec, email) {
           var dummyReturnAddress = 'http://www.backandblabla.bla';
           url += dummyReturnAddress;
           var handler = function handler(e) {
+            console.log(e);
             if (e.url.indexOf(dummyReturnAddress) !== -1) {
               var dataMatch = /(data|error)=(.+)/.exec(e.url);
+              var res = {};
               if (dataMatch && dataMatch[1] && dataMatch[2]) {
-                var _res = {
-                  data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
-                };
-                _res.status = dataMatch[1] === 'data' ? 200 : 0;
+                res.data = JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')));
+                res.status = dataMatch[1] === 'data' ? 200 : 0;
               }
               popup.removeEventListener('loadstart', handler, false);
               if (popup && popup.close) {
