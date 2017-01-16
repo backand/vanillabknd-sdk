@@ -181,10 +181,27 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
       if (defaults.mobilePlatform === 'ionic') {
         let dummyReturnAddress = 'http://www.backandblabla.bla';
         url += dummyReturnAddress;
+        let handler = function(e) {
+          if (e.url.indexOf(dummyReturnAddress) !== -1) {
+            let dataMatch = /(data|error)=(.+)/.exec(e.url);
+            if (dataMatch && dataMatch[1] && dataMatch[2]) {
+              let res = {
+                data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
+              }
+              res.status = (dataMatch[1] === 'data') ? 200 : 0;
+            }
+            popup.removeEventListener('loadstart', handler, false);
+            if (popup && popup.close) { popup.close() }
+            if (res.status != 200) {
+              reject(res);
+            }
+            else {
+              resolve(res);
+            }
+          }
+        }
+        popup.addEventListener('loadstart', handler, false);
         popup = window.open(url);
-        popup.addEventListener('loadstart', function (e) {
-          console.log(e);
-        })
       }
       else {
         reject(__generateFakeResponse__(0, '', [], `isMobile is true but mobilePlatform is not supported.
@@ -216,13 +233,13 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
         }
       }
       if (utils.detector.type !== 'Internet Explorer') {
-        popup = window.open(url, 'socialpopup', spec);
         window.addEventListener('message', handler, false);
+        popup = window.open(url, 'socialpopup', spec);
       }
       else {
+        window.addEventListener('storage', handler , false);
         popup = window.open('', '', spec);
         popup.location = url;
-        window.addEventListener('storage', handler , false);
       }
     }
     else if (utils.detector.env === 'node') {
@@ -368,7 +385,6 @@ function __signinWithToken__ (tokenData) {
       resolve(response);
     })
     .catch(error => {
-      console.log(error);
       reject(error);
     });
   });

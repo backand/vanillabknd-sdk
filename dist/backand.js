@@ -1861,12 +1861,32 @@ function __socialAuth__(provider, isSignUp, spec, email) {
     var popup = null;
     if (_defaults2.default.isMobile) {
       if (_defaults2.default.mobilePlatform === 'ionic') {
-        var dummyReturnAddress = 'http://www.backandblabla.bla';
-        url += dummyReturnAddress;
-        popup = window.open(url);
-        popup.addEventListener('loadstart', function (e) {
-          console.log(e);
-        });
+        (function () {
+          var dummyReturnAddress = 'http://www.backandblabla.bla';
+          url += dummyReturnAddress;
+          var handler = function handler(e) {
+            if (e.url.indexOf(dummyReturnAddress) !== -1) {
+              var dataMatch = /(data|error)=(.+)/.exec(e.url);
+              if (dataMatch && dataMatch[1] && dataMatch[2]) {
+                var _res = {
+                  data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
+                };
+                _res.status = dataMatch[1] === 'data' ? 200 : 0;
+              }
+              popup.removeEventListener('loadstart', handler, false);
+              if (popup && popup.close) {
+                popup.close();
+              }
+              if (res.status != 200) {
+                reject(res);
+              } else {
+                resolve(res);
+              }
+            }
+          };
+          popup.addEventListener('loadstart', handler, false);
+          popup = window.open(url);
+        })();
       } else {
         reject(__generateFakeResponse__(0, '', [], 'isMobile is true but mobilePlatform is not supported.\n          \'try contact us in request to add support for this platform'));
       }
@@ -1897,12 +1917,12 @@ function __socialAuth__(provider, isSignUp, spec, email) {
           }
         };
         if (_utils2.default.detector.type !== 'Internet Explorer') {
-          popup = window.open(url, 'socialpopup', spec);
           window.addEventListener('message', handler, false);
+          popup = window.open(url, 'socialpopup', spec);
         } else {
+          window.addEventListener('storage', handler, false);
           popup = window.open('', '', spec);
           popup.location = url;
-          window.addEventListener('storage', handler, false);
         }
       })();
     } else if (_utils2.default.detector.env === 'node') {
@@ -2042,7 +2062,6 @@ function __signinWithToken__(tokenData) {
       }
       resolve(response);
     }).catch(function (error) {
-      console.log(error);
       reject(error);
     });
   });
