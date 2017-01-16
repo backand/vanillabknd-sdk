@@ -29,14 +29,13 @@ function __generateFakeResponse__ (status = 0, statusText = '', headers = [], da
 }
 function __dispatchEvent__ (name) {
   let event;
-  if(defaults.isMobile)
-    return;
   if (document.createEvent) {
     event = document.createEvent('Event');
     event.initEvent(name, true, true);
     event.eventName = name;
     window.dispatchEvent(event);
-  } else {
+  }
+  else if (document.createEventObject) {
     event = document.createEventObject();
     event.eventType = name;
     event.eventName = name;
@@ -63,33 +62,39 @@ function __handleRefreshToken__ () {
     }
   })
 };
-function useAnonymousAuth (scb) {
+function useAnonymousAuth (scb, ecb) {
   return new Promise((resolve, reject) => {
-    let details = {
-      "access_token": defaults.anonymousToken,
-      "token_type": "AnonymousToken",
-      "expires_in": 0,
-      "appName": defaults.appName,
-      "username": "Guest",
-      "role": "User",
-      "firstName": "anonymous",
-      "lastName": "anonymous",
-      "fullName": "",
-      "regId": 0 ,
-      "userId": null
+    if (!defaults.anonymousToken) {
+      ecb && ecb(__generateFakeResponse__(0, '', [], 'anonymousToken is missing'));
+      reject(__generateFakeResponse__(0, '', [], 'anonymousToken is missing'));
     }
-    utils.storage.set('user', {
-      token: {
-        AnonymousToken: defaults.anonymousToken
-      },
-      details,
-    });
-    __dispatchEvent__(EVENTS.SIGNIN);
-    if (defaults.runSocket) {
-      utils.socket.connect(null, defaults.anonymousToken, defaults.appName);
+    else {
+      let details = {
+        "access_token": defaults.anonymousToken,
+        "token_type": "AnonymousToken",
+        "expires_in": 0,
+        "appName": defaults.appName,
+        "username": "Guest",
+        "role": "User",
+        "firstName": "anonymous",
+        "lastName": "anonymous",
+        "fullName": "",
+        "regId": 0 ,
+        "userId": null
+      }
+      utils.storage.set('user', {
+        token: {
+          AnonymousToken: defaults.anonymousToken
+        },
+        details,
+      });
+      __dispatchEvent__(EVENTS.SIGNIN);
+      if (defaults.runSocket) {
+        utils.socket.connect(null, defaults.anonymousToken, defaults.appName);
+      }
+      scb && scb(__generateFakeResponse__(200, 'OK', [], details));
+      resolve(__generateFakeResponse__(200, 'OK', [], details));
     }
-    scb && scb(__generateFakeResponse__(200, 'OK', [], details));
-    resolve(__generateFakeResponse__(200, 'OK', [], details));
   });
 }
 function signin (username, password, scb, ecb) {
@@ -122,7 +127,7 @@ function signin (username, password, scb, ecb) {
     });
   });
 }
-function signup (email, password, confirmPassword, firstName, lastName, parameters = {}, scb, ecb) {
+function signup (firstName, lastName, email, password, confirmPassword, parameters = {}, scb, ecb) {
   return new Promise((resolve, reject) => {
     utils.http({
       url: URLS.signup,
@@ -172,42 +177,59 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
     }
     let url =  `${defaults.apiUrl}/1/${__getSocialUrl__(provider, isSignUp, true)}&appname=${defaults.appName}${email ? '&email='+email : ''}&returnAddress=` // ${location.href}
     let popup = null;
-    if (!utils.isIE) {
-      popup = window.open(url, 'socialpopup', spec);
-    }
-    else {
-      popup = window.open('', '', spec);
-      popup.location = url;
-    }
-    if (popup && popup.focus) { popup.focus() }
-
-    let handler = function(e) {
-      let url = e.type === 'message' ? e.origin : e.url;
-      // ie-location-origin-polyfill
-      if (!window.location.origin) {
-        window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
-      }
-      if (url.indexOf(window.location.origin) === -1) {
-        reject(__generateFakeResponse__(0, '', [], 'Unknown Origin Message'));
-      }
-
-      let res = e.type === 'message' ? JSON.parse(e.data) : JSON.parse(e.newValue);
-      window.removeEventListener('message', handler, false);
-      window.removeEventListener('storage', handler, false);
-      if (popup && popup.close) { popup.close() }
-      e.type === 'storage' && localStorage.removeItem(e.key);
-
-      if (res.status != 200) {
-        reject(res);
+    if (defaults.isMobile) {
+      if (defaults.mobilePlatform === 'ionic') {
+        let dummyReturnAddress = 'http://www.backandblabla.bla';
+        url += dummyReturnAddress;
+        popup = window.open(url);
+        popup.addEventListener('loadstart', function (e) {
+          console.log(e);
+        })
       }
       else {
-        resolve(res);
+        reject(__generateFakeResponse__(0, '', [], `isMobile is true but mobilePlatform is not supported.
+          'try contact us in request to add support for this platform`));
       }
     }
-    handler = handler.bind(popup);
+    else if (utils.detector.env === 'browser') {
+      let handler = function(e) {
+        let url = e.type === 'message' ? e.origin : e.url;
+        // ie-location-origin-polyfill
+        if (!window.location.origin) {
+          window.location.origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port: '');
+        }
+        if (url.indexOf(window.location.origin) === -1) {
+          reject(__generateFakeResponse__(0, '', [], 'Unknown Origin Message'));
+        }
 
-    window.addEventListener('message', handler, false);
-    window.addEventListener('storage', handler , false);
+        let res = e.type === 'message' ? JSON.parse(e.data) : JSON.parse(e.newValue);
+        window.removeEventListener('message', handler, false);
+        window.removeEventListener('storage', handler, false);
+        if (popup && popup.close) { popup.close() }
+        e.type === 'storage' && localStorage.removeItem(e.key);
+
+        if (res.status != 200) {
+          reject(res);
+        }
+        else {
+          resolve(res);
+        }
+      }
+      if (utils.detector.type !== 'Internet Explorer') {
+        popup = window.open(url, 'socialpopup', spec);
+        window.addEventListener('message', handler, false);
+      }
+      else {
+        popup = window.open('', '', spec);
+        popup.location = url;
+        window.addEventListener('storage', handler , false);
+      }
+    }
+    else if (utils.detector.env === 'node') {
+      reject(__generateFakeResponse__(0, '', [], `socials are not supported in a nodejs environment`));
+    }
+
+    if (popup && popup.focus) { popup.focus() }
   });
 }
 function socialSignin (provider, scb, ecb, spec = 'left=1, top=1, width=500, height=560') {

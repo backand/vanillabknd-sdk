@@ -85,60 +85,65 @@ class Http {
       req.send(JSON.stringify(data));
     }
   }
-  request (cfg, scb , ecb) {
-    return new Promise((resolve, reject) => {
-
+  request (cfg, scb, ecb) {
+    return new Promise(resolve => {
       let req = new XMLHttpRequest();
       let config = Object.assign({}, this.config, cfg);
-
-      if (!config.url || typeof config.url !== 'string' || config.url.length === 0) {
-        let res = this._handleError('url parameter is missing', config);
-        ecb && ecb(res);
-        reject(res);
+      if (config.interceptors.request) {
+        config.interceptors.request.call(this, req, config, resolve);
       }
-      if (config.withCredentials) { req.withCredentials = true }
-      if (config.timeout) { req.timeout = true }
-      config.interceptors.request && config.interceptors.request.call(this, config);
-      let params = this._encodeParams(config.params);
-      req.open(config.method, `${config.baseURL ? config.baseURL+'/' : ''}${config.url}${params ? '?'+params : ''}`, true, config.auth.username, config.auth.password);
-      req.ontimeout = function() {
-        let res = this._handleError('timeout', config);
-        ecb && ecb(res);
-        reject(res);
-      };
-      req.onabort = function() {
-        let res = this._handleError('abort', config);
-        ecb && ecb(res);
-        reject(res);
-      };
-      req.onreadystatechange = () => {
-        if (req.readyState == XMLHttpRequest.DONE) {
-          let res = this._createResponse(req, config);
-          if (res.status === 200){
-            if (config.interceptors.response) {
-              config.interceptors.response.call(this, res, config, resolve, reject, scb, ecb);
-            }
-            else {
-              scb && scb(res);
-              resolve(res);
+      else {
+        resolve({req, config});
+      }
+    }).then(({req, config}) => {
+        return new Promise((resolve, reject) => {
+          if (!config.url || typeof config.url !== 'string' || config.url.length === 0) {
+            let res = this._handleError('url parameter is missing', config);
+            ecb && ecb(res);
+            reject(res);
+          }
+          if (config.withCredentials) { req.withCredentials = true }
+          if (config.timeout) { req.timeout = true }
+          let params = this._encodeParams(config.params);
+          req.open(config.method, `${config.baseURL ? config.baseURL+'/' : ''}${config.url}${params ? '?'+params : ''}`, true, config.auth.username, config.auth.password);
+          req.ontimeout = () => {
+            let res = this._handleError('timeout', config);
+            ecb && ecb(res);
+            reject(res);
+          };
+          req.onabort = () => {
+            let res = this._handleError('abort', config);
+            ecb && ecb(res);
+            reject(res);
+          };
+          req.onreadystatechange = () => {
+            if (req.readyState == XMLHttpRequest.DONE) {
+              let res = this._createResponse(req, config);
+              if (res.status === 200){
+                if (config.interceptors.response) {
+                  config.interceptors.response.call(this, res, config, resolve, reject, scb, ecb);
+                }
+                else {
+                  scb && scb(res);
+                  resolve(res);
+                }
+              }
+              else {
+                if (config.interceptors.responseError) {
+                  config.interceptors.responseError.call(this, res, config, resolve, reject, scb, ecb);
+                }
+                else {
+                  ecb && ecb(res);
+                  reject(res);
+                }
+              }
             }
           }
-          else {
-            if (config.interceptors.responseError) {
-              config.interceptors.responseError.call(this, res, config, resolve, reject, scb, ecb);
-            }
-            else {
-              ecb && ecb(res);
-              reject(res);
-            }
-          }
-        }
-      }
-      this._setHeaders(req, config.headers);
-      this._setData(req, config.data);
+          this._setHeaders(req, config.headers);
+          this._setData(req, config.data);
+        });
     });
   }
-
 }
 function createInstance(config = {}) {
   var context = new Http(config);

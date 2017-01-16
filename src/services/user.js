@@ -31,7 +31,7 @@ function __getUserDetailsFromStorage__ (scb, ecb) {
     }
   });
 }
-function getUserDetails (scb, ecb, force = false) {
+function getUserDetails (force = false, scb, ecb) {
   if (!force) {
     return __getUserDetailsFromStorage__(scb, ecb);
   }
@@ -59,7 +59,7 @@ function getUsername (scb, ecb) {
       return response;
     });
 }
-function getUserRole () {
+function getUserRole (scb, ecb) {
   return __getUserDetailsFromStorage__(null, ecb)
     .then(response => {
       response.data = response.data['role'];
@@ -67,7 +67,7 @@ function getUserRole () {
       return response;
     });
 }
-function getToken () {
+function getToken (scb, ecb) {
   return __getUserDetailsFromStorage__(null, ecb)
     .then(response => {
       response.data = response.data['access_token'];
@@ -75,7 +75,7 @@ function getToken () {
       return response;
     });
 }
-function getRefreshToken () {
+function getRefreshToken (scb, ecb) {
   return __getUserDetailsFromStorage__(null, ecb)
     .then(response => {
       response.data = response.data['refresh_token'];

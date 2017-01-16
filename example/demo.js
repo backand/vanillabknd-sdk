@@ -32,6 +32,7 @@
     signUpToken: '851692ae-eb94-4f18-87ee-075255e67748',
     anonymousToken: '82cfcfe8-c718-4621-8bb6-cd600e23487f',
     runSocket: true,
+    // useAnonymousTokenByDefault: false,
     // storage: new MemoryStorage()
   });
 
@@ -63,7 +64,7 @@
     }, false);
 
   document.getElementById('anonymous_btn').addEventListener('click', function() {
-      backand.useAnonymousAuth(successCallback);
+      backand.useAnonymousAuth(successCallback, errorCallback);
     }, false);
 
   var socialProviders = backand.constants.SOCIAL_PROVIDERS
@@ -98,7 +99,9 @@
               document.getElementById('updateitem_btn').disabled = false;
               document.getElementById('deleteitem_btn').disabled = false;
               successCallback(response);
-            }, errorCallback);
+            }, errorCallback).then(function(res) {
+              console.log('handleRefreshToken')
+            });
   }, false);
 
   document.getElementById('getitems_btn').addEventListener('click', function() {

@@ -12,6 +12,7 @@ import utils from './utils/utils'
 import Storage from './utils/storage'
 import Http from './utils/http'
 import Socket from './utils/socket'
+import detect from './utils/detector'
 
 import auth from './services/auth'
 import object from './services/object'
@@ -19,16 +20,17 @@ import file from './services/file'
 import query from './services/query'
 import user from './services/user'
 
+// running tests to identify the runtime environment
+var detector = detect();
+
 // get data from url in social sign-in popup
-// let dataMatch = /\?(data|error)=(.+)/.exec(window.location.href);
 let dataMatch = /(data|error)=(.+)/.exec(window.location.href);
 if (dataMatch && dataMatch[1] && dataMatch[2]) {
   let data = {
     data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
   }
   data.status = (dataMatch[1] === 'data') ? 200 : 0;
-  var isIE = false || !!document.documentMode;
-  if (!isIE) {
+  if (detector.type !== 'Internet Explorer') {
     window.opener.postMessage(JSON.stringify(data), location.origin);
   }
   else {
@@ -49,10 +51,8 @@ backand.init = (config = {}) => {
   // verify new defaults
   if (!defaults.appName)
     throw new Error('appName is missing');
-  if (!defaults.anonymousToken)
-    throw new Error('anonymousToken is missing');
-  if (!defaults.signUpToken)
-    throw new Error('signUpToken is missing');
+  if (!defaults.anonymousToken && defaults.useAnonymousTokenByDefault)
+    throw new Error('useAnonymousTokenByDefault is true but anonymousToken is missing');
 
   // init utils
   Object.assign(utils, {
@@ -60,8 +60,8 @@ backand.init = (config = {}) => {
     http: Http.create({
       baseURL: defaults.apiUrl
     }),
-    isIE: window.document && (false || !!document.documentMode),
-    ENV: 'browser',
+    detector,
+    // isIE: window.document && (false || !!document.documentMode),
   });
   if (defaults.runSocket) {
     Object.assign(utils, {
@@ -70,9 +70,26 @@ backand.init = (config = {}) => {
   }
 
   utils.http.config.interceptors = {
-    request: function(config) {
-      if (config.url.indexOf(constants.URLS.token) ===  -1 && utils.storage.get('user')) {
-        config.headers = Object.assign({}, config.headers, utils.storage.get('user').token)
+    request: function(req, config, next) {
+      if (config.url.indexOf(constants.URLS.token) ===  -1) {
+        let user = utils.storage.get('user');
+        if (defaults.useAnonymousTokenByDefault && !user) {
+          auth.useAnonymousAuth()
+            .then(response => {
+              config.headers = Object.assign({}, config.headers, utils.storage.get('user').token);
+              next({req, config});
+            })
+        }
+        else if (user) {
+          config.headers = Object.assign({}, config.headers, user.token);
+          next({req, config});
+        }
+        else {
+          next({req, config});
+        }
+      }
+      else {
+        next({req, config});
       }
     },
     responseError: function (error, config, resolve, reject, scb, ecb) {
@@ -82,7 +99,7 @@ backand.init = (config = {}) => {
        && error.data && error.data.Message === 'invalid or expired token') {
          auth.__handleRefreshToken__()
            .then(response => {
-             utils.http.request(config, scb, ecb);
+             resolve(this.request(config, scb, ecb));
            })
            .catch(error => {
              ecb && ecb(error);
@@ -116,6 +133,9 @@ backand.init = (config = {}) => {
       defaults.appName
     );
     Object.assign(backand, {on: utils.socket.on.bind(utils.socket)});
+  }
+  if(defaults.exportUtils) {
+    Object.assign(backand, { utils });
   }
 
 }

@@ -26,7 +26,7 @@ gulp.task('ts', ['clean'], ()=> {
 });
 
 gulp.task('build', ['ts'], ()=> {
-  return browserify({ entries: paths.src.js, standalone: 'backand', debug: true })
+  return browserify({ entries: paths.src.js, standalone: 'backand', debug: false })
   	.transform("babelify")
     .bundle()
     .pipe(source('backand.js'))
