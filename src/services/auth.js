@@ -200,8 +200,8 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
             }
           }
         }
-        popup.addEventListener('loadstart', handler, false);
         popup = window.open(url);
+        popup.addEventListener('loadstart', handler, false);
       }
       else {
         reject(__generateFakeResponse__(0, '', [], `isMobile is true but mobilePlatform is not supported.
@@ -233,13 +233,13 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
         }
       }
       if (utils.detector.type !== 'Internet Explorer') {
-        window.addEventListener('message', handler, false);
         popup = window.open(url, 'socialpopup', spec);
+        window.addEventListener('message', handler, false);
       }
       else {
-        window.addEventListener('storage', handler , false);
         popup = window.open('', '', spec);
         popup.location = url;
+        window.addEventListener('storage', handler , false);
       }
     }
     else if (utils.detector.env === 'node') {

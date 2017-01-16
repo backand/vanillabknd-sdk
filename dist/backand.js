@@ -1884,8 +1884,8 @@ function __socialAuth__(provider, isSignUp, spec, email) {
               }
             }
           };
-          popup.addEventListener('loadstart', handler, false);
           popup = window.open(url);
+          popup.addEventListener('loadstart', handler, false);
         })();
       } else {
         reject(__generateFakeResponse__(0, '', [], 'isMobile is true but mobilePlatform is not supported.\n          \'try contact us in request to add support for this platform'));
@@ -1917,12 +1917,12 @@ function __socialAuth__(provider, isSignUp, spec, email) {
           }
         };
         if (_utils2.default.detector.type !== 'Internet Explorer') {
-          window.addEventListener('message', handler, false);
           popup = window.open(url, 'socialpopup', spec);
+          window.addEventListener('message', handler, false);
         } else {
-          window.addEventListener('storage', handler, false);
           popup = window.open('', '', spec);
           popup.location = url;
+          window.addEventListener('storage', handler, false);
         }
       })();
     } else if (_utils2.default.detector.env === 'node') {
