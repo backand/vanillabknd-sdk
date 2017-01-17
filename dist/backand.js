@@ -1720,6 +1720,7 @@ function __generateFakeResponse__() {
 }
 function __dispatchEvent__(name) {
   var event = void 0;
+  if (_defaults2.default.isMobile) return;
   if (document.createEvent) {
     event = document.createEvent('Event');
     event.initEvent(name, true, true);

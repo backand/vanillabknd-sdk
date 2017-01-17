@@ -29,6 +29,8 @@ function __generateFakeResponse__ (status = 0, statusText = '', headers = [], da
 }
 function __dispatchEvent__ (name) {
   let event;
+  if(defaults.isMobile)
+    return;
   if (document.createEvent) {
     event = document.createEvent('Event');
     event.initEvent(name, true, true);
