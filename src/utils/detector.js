@@ -23,7 +23,7 @@ export default function detect ()  {
     result.env = 'node'
     result.type = 'node'
   }
-  else {
+  else if (window.navigator.userAgent) {
     let ua = window.navigator.userAgent
     result.env = 'browser'
 
@@ -70,7 +70,7 @@ export default function detect ()  {
       result.type = 'Safari'
     }
     else {
-      result.type = 'Unknown'
+      result.type = 'unknown'
     }
 
     let windowsphone = /windows phone/i.test(ua)
@@ -96,7 +96,7 @@ export default function detect ()  {
       result.os = 'linux'
     }
     else {
-      result.os = 'Unknown'
+      result.os = 'unknown'
     }
 
     let tablet = /tablet/i.test(ua)
@@ -114,6 +114,22 @@ export default function detect ()  {
       result.device = 'pc'
     }
   }
-  console.log(`Running on ${result.device} with a ${result.os} os and ${result.env} ${result.env !== result.type ? '(' + result.type + ')' : '' } environment ...`);
+  else if (window.navigator) {
+    if (window.navigator.product === 'ReactNative') {
+      result.device = 'mobile'
+      result.os = 'unknown'
+      result.env = 'react-native'
+      result.type = 'react-native'
+    }
+  }
+  else {
+    result.device = 'unknown'
+    result.os = 'unknown'
+    result.env = 'unknown'
+    result.type = 'unknown'
+  }
+
+  result.device !== 'unknown' &&
+    console.log(`Running on ${result.device} with a ${result.os} os and ${result.env} ${result.env !== result.type ? '(' + result.type + ')' : '' } environment ...`);
   return result
 }

@@ -24,17 +24,19 @@ import user from './services/user'
 var detector = detect();
 
 // get data from url in social sign-in popup
-let dataMatch = /(data|error)=(.+)/.exec(window.location.href);
-if (dataMatch && dataMatch[1] && dataMatch[2]) {
-  let data = {
-    data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
-  }
-  data.status = (dataMatch[1] === 'data') ? 200 : 0;
-  if (detector.type !== 'Internet Explorer') {
-    window.opener.postMessage(JSON.stringify(data), location.origin);
-  }
-  else {
-    localStorage.setItem('SOCIAL_DATA', JSON.stringify(data));
+if(window.location && detector.env !== 'node' && detector.env !== 'react-native') {
+  let dataMatch = /(data|error)=(.+)/.exec(window.location.href);
+  if (dataMatch && dataMatch[1] && dataMatch[2]) {
+    let data = {
+      data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
+    }
+    data.status = (dataMatch[1] === 'data') ? 200 : 0;
+    if (detector.type !== 'Internet Explorer') {
+      window.opener.postMessage(JSON.stringify(data), location.origin);
+    }
+    else {
+      localStorage.setItem('SOCIAL_DATA', JSON.stringify(data));
+    }
   }
 }
 

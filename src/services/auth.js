@@ -182,7 +182,6 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
         let dummyReturnAddress = 'http://www.backandblabla.bla';
         url += dummyReturnAddress;
         let handler = function(e) {
-          console.log(e);
           if (e.url.indexOf(dummyReturnAddress) === 0) {
             let dataMatch = /(data|error)=(.+)/.exec(e.url);
             let res = {};
@@ -202,6 +201,9 @@ function __socialAuth__ (provider, isSignUp, spec, email) {
         }
         popup = window.open(url);
         popup.addEventListener('loadstart', handler, false);
+      }
+      else if (defaults.mobilePlatform === 'react-native') {
+        reject(__generateFakeResponse__(0, '', [], 'react-native is not supported yet for socials'));
       }
       else {
         reject(__generateFakeResponse__(0, '', [], `isMobile is true but mobilePlatform is not supported.

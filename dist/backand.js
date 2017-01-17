@@ -1564,16 +1564,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var detector = (0, _detector2.default)();
 
 // get data from url in social sign-in popup
-var dataMatch = /(data|error)=(.+)/.exec(window.location.href);
-if (dataMatch && dataMatch[1] && dataMatch[2]) {
-  var data = {
-    data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
-  };
-  data.status = dataMatch[1] === 'data' ? 200 : 0;
-  if (detector.type !== 'Internet Explorer') {
-    window.opener.postMessage(JSON.stringify(data), location.origin);
-  } else {
-    localStorage.setItem('SOCIAL_DATA', JSON.stringify(data));
+if (window.location && detector.env !== 'node' && detector.env !== 'react-native') {
+  var dataMatch = /(data|error)=(.+)/.exec(window.location.href);
+  if (dataMatch && dataMatch[1] && dataMatch[2]) {
+    var data = {
+      data: JSON.parse(decodeURIComponent(dataMatch[2].replace(/#.*/, '')))
+    };
+    data.status = dataMatch[1] === 'data' ? 200 : 0;
+    if (detector.type !== 'Internet Explorer') {
+      window.opener.postMessage(JSON.stringify(data), location.origin);
+    } else {
+      localStorage.setItem('SOCIAL_DATA', JSON.stringify(data));
+    }
   }
 }
 
@@ -1865,7 +1867,6 @@ function __socialAuth__(provider, isSignUp, spec, email) {
           var dummyReturnAddress = 'http://www.backandblabla.bla';
           url += dummyReturnAddress;
           var handler = function handler(e) {
-            console.log(e);
             if (e.url.indexOf(dummyReturnAddress) === 0) {
               var dataMatch = /(data|error)=(.+)/.exec(e.url);
               var res = {};
@@ -1887,6 +1888,8 @@ function __socialAuth__(provider, isSignUp, spec, email) {
           popup = window.open(url);
           popup.addEventListener('loadstart', handler, false);
         })();
+      } else if (_defaults2.default.mobilePlatform === 'react-native') {
+        reject(__generateFakeResponse__(0, '', [], 'react-native is not supported yet for socials'));
       } else {
         reject(__generateFakeResponse__(0, '', [], 'isMobile is true but mobilePlatform is not supported.\n          \'try contact us in request to add support for this platform'));
       }
@@ -2463,7 +2466,7 @@ function detect() {
     }
     result.env = 'node';
     result.type = 'node';
-  } else {
+  } else if (window.navigator.userAgent) {
     var ua = window.navigator.userAgent;
     result.env = 'browser';
 
@@ -2496,7 +2499,7 @@ function detect() {
     } else if (/safari|applewebkit/i.test(ua)) {
       result.type = 'Safari';
     } else {
-      result.type = 'Unknown';
+      result.type = 'unknown';
     }
 
     var windowsphone = /windows phone/i.test(ua),
@@ -2517,7 +2520,7 @@ function detect() {
     } else if (/linux|X11/i.test(ua)) {
       result.os = 'linux';
     } else {
-      result.os = 'Unknown';
+      result.os = 'unknown';
     }
 
     var tablet = /tablet/i.test(ua),
@@ -2532,8 +2535,21 @@ function detect() {
     } else {
       result.device = 'pc';
     }
+  } else if (window.navigator) {
+    if (window.navigator.product === 'ReactNative') {
+      result.device = 'mobile';
+      result.os = 'unknown';
+      result.env = 'react-native';
+      result.type = 'react-native';
+    }
+  } else {
+    result.device = 'unknown';
+    result.os = 'unknown';
+    result.env = 'unknown';
+    result.type = 'unknown';
   }
-  console.log('Running on ' + result.device + ' with a ' + result.os + ' os and ' + result.env + ' ' + (result.env !== result.type ? '(' + result.type + ')' : '') + ' environment ...');
+
+  result.device !== 'unknown' && console.log('Running on ' + result.device + ' with a ' + result.os + ' os and ' + result.env + ' ' + (result.env !== result.type ? '(' + result.type + ')' : '') + ' environment ...');
   return result;
 }
 
