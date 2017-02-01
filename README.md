@@ -1,4 +1,6 @@
 vanillabknd-sdk
+
+### **Note: This SDK is deprecated. Please use our new SDK at https://github.com/backand/vanilla-sdk**
 ===
 [![npm version](https://img.shields.io/npm/v/vanillabknd-sdk.svg?style=flat-square)](https://www.npmjs.org/package/vanillabknd-sdk)
 [![npm downloads](https://img.shields.io/npm/dt/vanillabknd-sdk.svg?style=flat-square)](http://npm-stat.com/charts.html?package=vanillabknd-sdk)
